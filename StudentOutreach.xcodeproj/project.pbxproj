@@ -7,19 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E30F722B2ABA4B4700F557F0 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = E30F722A2ABA4B4700F557F0 /* Localizable.xcstrings */; };
 		E3679A9C2AB4963700A352F0 /* StudentOutreachApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3679A9B2AB4963700A352F0 /* StudentOutreachApp.swift */; };
 		E3679A9E2AB4963700A352F0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3679A9D2AB4963700A352F0 /* ContentView.swift */; };
 		E3679AA02AB4963800A352F0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E3679A9F2AB4963800A352F0 /* Assets.xcassets */; };
 		E3679AA42AB4963800A352F0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E3679AA32AB4963800A352F0 /* Preview Assets.xcassets */; };
+		E36CC3352ABA205F00ACF306 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36CC3342ABA205F00ACF306 /* ViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E30F722A2ABA4B4700F557F0 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E3679A982AB4963700A352F0 /* StudentOutreach.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StudentOutreach.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3679A9B2AB4963700A352F0 /* StudentOutreachApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentOutreachApp.swift; sourceTree = "<group>"; };
 		E3679A9D2AB4963700A352F0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		E3679A9F2AB4963800A352F0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E3679AA12AB4963800A352F0 /* StudentOutreach.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StudentOutreach.entitlements; sourceTree = "<group>"; };
 		E3679AA32AB4963800A352F0 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		E36CC3342ABA205F00ACF306 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +58,8 @@
 			children = (
 				E3679A9B2AB4963700A352F0 /* StudentOutreachApp.swift */,
 				E3679A9D2AB4963700A352F0 /* ContentView.swift */,
+				E36CC3342ABA205F00ACF306 /* ViewModel.swift */,
+				E30F722A2ABA4B4700F557F0 /* Localizable.xcstrings */,
 				E3679A9F2AB4963800A352F0 /* Assets.xcassets */,
 				E3679AA12AB4963800A352F0 /* StudentOutreach.entitlements */,
 				E3679AA22AB4963800A352F0 /* Preview Content */,
@@ -97,7 +103,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1430;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					E3679A972AB4963700A352F0 = {
 						CreatedOnToolsVersion = 14.3.1;
@@ -129,6 +135,7 @@
 			files = (
 				E3679AA42AB4963800A352F0 /* Preview Assets.xcassets in Resources */,
 				E3679AA02AB4963800A352F0 /* Assets.xcassets in Resources */,
+				E30F722B2ABA4B4700F557F0 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -140,6 +147,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E3679A9E2AB4963700A352F0 /* ContentView.swift in Sources */,
+				E36CC3352ABA205F00ACF306 /* ViewModel.swift in Sources */,
 				E3679A9C2AB4963700A352F0 /* StudentOutreachApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -151,6 +159,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -180,9 +189,11 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -209,6 +220,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -238,9 +250,11 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -264,6 +278,7 @@
 				CODE_SIGN_ENTITLEMENTS = StudentOutreach/StudentOutreach.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"StudentOutreach/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -300,6 +315,7 @@
 				CODE_SIGN_ENTITLEMENTS = StudentOutreach/StudentOutreach.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"StudentOutreach/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

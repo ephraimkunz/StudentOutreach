@@ -1,0 +1,132 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "%@" : {
+
+    },
+    "%@ - %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ - %2$@"
+          }
+        }
+      }
+    },
+    "%@ - %@ - %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ - %2$@ - %3$@"
+          }
+        }
+      }
+    },
+    "Access Token:" : {
+
+    },
+    "Assignment:" : {
+
+    },
+    "Course:" : {
+
+    },
+    "Disable All" : {
+
+    },
+    "Enable All" : {
+
+    },
+    "Enter a subject line…" : {
+
+    },
+    "Message" : {
+
+    },
+    "Message Students Who:" : {
+
+    },
+    "Mode:" : {
+
+    },
+    "Recipients (%lld)" : {
+
+    },
+    "Score:" : {
+
+    },
+    "Search" : {
+
+    },
+    "Send" : {
+
+    },
+    "Send Message" : {
+
+    },
+    "Sending" : {
+
+    },
+    "Subject" : {
+
+    },
+    "This message will be sent to %lld recipients. The message is using %lld substitutions." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This message will be sent to %#@arg1@. The message is using %#@arg2@."
+          },
+          "substitutions" : {
+            "arg1" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg recipient"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg recipients"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg substitution"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg substitutions"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
