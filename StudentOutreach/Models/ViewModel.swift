@@ -8,8 +8,6 @@
 import Foundation
 import os.log
 
-private let logger = Logger(subsystem: "com.ephraimkunz.StudentOutreach", category: "viewModel")
-
 class ViewModel: ObservableObject {
     var networking = Networking(accessToken: "")
     
