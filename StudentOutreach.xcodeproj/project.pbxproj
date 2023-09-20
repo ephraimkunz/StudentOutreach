@@ -55,7 +55,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		E30F72362ABA712000F557F0 /* Components */ = {
+		E30F72362ABA712000F557F0 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				E30F722C2ABA6D5C00F557F0 /* SubjectAndMessageView.swift */,
@@ -63,7 +63,7 @@
 				E30F72302ABA6FD600F557F0 /* CoursePicker.swift */,
 				E30F72342ABA70F600F557F0 /* FileBugButton.swift */,
 			);
-			path = Components;
+			path = Views;
 			sourceTree = "<group>";
 		};
 		E3679A8F2AB4963700A352F0 = {
@@ -87,8 +87,8 @@
 			children = (
 				E3679A9B2AB4963700A352F0 /* StudentOutreachApp.swift */,
 				E3679A9D2AB4963700A352F0 /* ContentView.swift */,
+				E30F72362ABA712000F557F0 /* Views */,
 				E3D6CFF22ABA743B0079D370 /* Models */,
-				E30F72362ABA712000F557F0 /* Components */,
 				E30F722A2ABA4B4700F557F0 /* Localizable.xcstrings */,
 				E3679A9F2AB4963800A352F0 /* Assets.xcassets */,
 				E3679AA12AB4963800A352F0 /* StudentOutreach.entitlements */,
