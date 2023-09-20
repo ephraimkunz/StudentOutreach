@@ -22,24 +22,7 @@ struct RecipientsView: View {
             
             List {
                 ForEach(students.filter({ searchTerm.isEmpty ? true : $0.name.lowercased().contains(searchTerm.lowercased())} ), id: \.self) { student in
-                    let disabled = disabledStudentIds.contains(student.id)
-                    HStack {
-                        Text(student.name)
-                            .lineLimit(1)
-                            .strikethrough(disabled)
-                        
-                        Spacer()
-                        
-                        Button {
-                            if disabled {
-                                disabledStudentIds.remove(student.id)
-                            } else {
-                                disabledStudentIds.insert(student.id)
-                            }
-                        } label: {
-                            Image(systemName: disabled ? "plus" : "xmark")
-                        }
-                    }
+                    StudentCell(disabledStudentIds: $disabledStudentIds, student: student)
                 }
             }
             
@@ -55,5 +38,44 @@ struct RecipientsView: View {
                 .disabled(disabledStudentIds.count == students.count)
             }
         }
+    }
+}
+
+struct StudentCell: View {
+    @Binding var disabledStudentIds: Set<Int>
+    let student: StudentAssignmentInfo
+    
+    @State private var toggleEnabled = false
+    
+    var body: some View {
+        HStack {
+            Text(student.name)
+                .lineLimit(1)
+                .strikethrough(disabledStudentIds.contains(student.id))
+            
+            Spacer()
+            
+            Toggle("Enabled", isOn: $toggleEnabled)
+                .labelsHidden()
+        }
+        .task {
+            updateToggleEnabled()
+        }
+        .onChange(of: disabledStudentIds) { newValue in
+            updateToggleEnabled()
+        }
+        .onChange(of: toggleEnabled) { newValue in
+            if disabledStudentIds.contains(student.id) {
+                disabledStudentIds.remove(student.id)
+            } else {
+                disabledStudentIds.insert(student.id)
+            }
+            
+            updateToggleEnabled()
+        }
+    }
+    
+    func updateToggleEnabled() {
+        toggleEnabled = !disabledStudentIds.contains(student.id)
     }
 }
