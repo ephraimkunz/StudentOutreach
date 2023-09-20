@@ -37,7 +37,7 @@ struct ContentView: View {
                 Picker("Message Students Who:", selection: $viewModel.messageFilter) {
                     Text(verbatim: "")
                         .tag(nil as MessageFilter?)
-                    ForEach(MessageFilter.applicableFilters(assignment: viewModel.selectedAssignment)) { filter in
+                    ForEach(MessageFilter.applicableFilters(assignment: viewModel.selectedAssignment, course: viewModel.selectedCourse, mode: viewModel.messageMode)) { filter in
                         Text(filter.title)
                             .tag(filter as MessageFilter?)
                     }
@@ -45,6 +45,22 @@ struct ContentView: View {
                 
                 if let messageFilter = viewModel.messageFilter, messageFilter.scoreNeeded {
                     TextField("Score:", value: $viewModel.messageFilterScore, formatter: NumberFormatter())
+#if !os(macOS)
+                        .keyboardType(.numberPad)
+#endif
+                }
+            } else {
+                Picker("Message Students Who:", selection: $viewModel.messageFilter) {
+                    Text(verbatim: "")
+                        .tag(nil as MessageFilter?)
+                    ForEach(MessageFilter.applicableFilters(assignment: viewModel.selectedAssignment, course: viewModel.selectedCourse, mode: viewModel.messageMode)) { filter in
+                        Text(filter.title)
+                            .tag(filter as MessageFilter?)
+                    }
+                }
+                
+                if let messageFilter = viewModel.messageFilter, messageFilter.scoreNeeded {
+                    TextField("Course Score:", value: $viewModel.messageFilterScore, formatter: NumberFormatter())
 #if !os(macOS)
                         .keyboardType(.numberPad)
 #endif

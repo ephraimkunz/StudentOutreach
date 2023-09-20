@@ -9,6 +9,7 @@ import Foundation
 
 enum MessageFilter: CaseIterable, Identifiable {
     case notSubmitted, notGraded, scoredMoreThan, scoredLessThan, markedIncomplete, reassigned
+    case courseScoreLessThan, courseScoreMoreThan, all
     
     var id: Self {
         return self
@@ -29,31 +30,57 @@ enum MessageFilter: CaseIterable, Identifiable {
             return "Marked incomplete"
         case .reassigned:
             return "Reassigned"
+        case .courseScoreLessThan:
+            return "Course score less than"
+        case .courseScoreMoreThan:
+            return "Course score more than"
+        case .all:
+            return "All students in course"
         }
     }
     
     // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L215
-    func subject(assignmentName: String, score: Double) -> String {
+    func subject(assignmentName: String?, score: Double, courseName: String) -> String {
         switch self {
         case .notSubmitted:
-            return "No submission for \(assignmentName)"
+            if let assignmentName {
+                return "No submission for \(assignmentName)"
+            }
         case .notGraded:
-            return "No grade for \(assignmentName)"
+            if let assignmentName {
+                return "No grade for \(assignmentName)"
+            }
         case .scoredMoreThan:
-            return "Scored more than \(score.formatted()) on \(assignmentName)"
+            if let assignmentName {
+                return "Scored more than \(score.formatted()) on \(assignmentName)"
+            }
         case .scoredLessThan:
-            return "Scored less than \(score.formatted()) on \(assignmentName)"
+            if let assignmentName {
+                return "Scored less than \(score.formatted()) on \(assignmentName)"
+            }
         case .markedIncomplete:
-            return "\(assignmentName) is incomplete"
+            if let assignmentName {
+                return "\(assignmentName) is incomplete"
+            }
         case .reassigned:
-            return "\(assignmentName) is reassigned"
+            if let assignmentName {
+                return "\(assignmentName) is reassigned"
+            }
+        case .courseScoreLessThan:
+            return "Score in \(courseName) is less than \(score.formatted())"
+        case .courseScoreMoreThan:
+            return "Score in \(courseName) is more than \(score.formatted())"
+        case .all:
+            return ""
         }
+        
+        return ""
     }
     
     // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L132
     var scoreNeeded: Bool {
         switch self {
-        case .scoredLessThan, .scoredMoreThan:
+        case .scoredLessThan, .scoredMoreThan, .courseScoreLessThan, .courseScoreMoreThan:
             return true
         default:
             return false
@@ -61,37 +88,45 @@ enum MessageFilter: CaseIterable, Identifiable {
     }
     
     // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L132
-    func shouldShow(_ assignment: Assignment) -> Bool {
+    func shouldShow(assignment: Assignment?, course: Course?, mode: MessageMode) -> Bool {
         switch self {
         case .notSubmitted:
-            let disallowedSubmissionTypes: Set<String> = ["on_paper", "none", "not_graded", ""];
-            return !disallowedSubmissionTypes.contains(assignment.submissionTypes[0])
+            if let assignment, mode == .assignment {
+                let disallowedSubmissionTypes: Set<String> = ["on_paper", "none", "not_graded", ""];
+                return !disallowedSubmissionTypes.contains(assignment.submissionTypes[0])
+            }
         case .notGraded:
-            return true
+            return assignment != nil && mode == .assignment
         case .scoredMoreThan, .scoredLessThan:
-            let scoredRequiredGradingTypes: Set<String> = ["points", "percent", "letter_grade", "gpa_scale"]
-            let isScored = scoredRequiredGradingTypes.contains(assignment.gradingType)
-            return isScored
+            if let assignment, mode == .assignment {
+                let scoredRequiredGradingTypes: Set<String> = ["points", "percent", "letter_grade", "gpa_scale"]
+                let isScored = scoredRequiredGradingTypes.contains(assignment.gradingType)
+                return isScored
+            }
         case .markedIncomplete:
-            return assignment.gradingType == "pass_fail"
+            if let assignment, mode == .assignment {
+                return assignment.gradingType == "pass_fail"
+            }
         case .reassigned:
-            // This is a bug in MessageStudentsWhoDialog.tsx that we will reproduce here for consistency with the web UI.
-            // I think that code is intending to test against multiple types but actually due to the use of || just tests the first.
-            let disallowedSubmissionTypes: Set<String> = ["on_paper"/*, "external_tool", "none", "discussion_topic", "online_quiz"*/]
-            let isReassignable = (assignment.allowedAttempts == -1 || (assignment.allowedAttempts > 1)) &&
-            assignment.dueAt != nil &&
-            Set(assignment.submissionTypes).intersection(disallowedSubmissionTypes).isEmpty
-            
-            return isReassignable
+            if let assignment, mode == .assignment {
+                // This is a bug in MessageStudentsWhoDialog.tsx that we will reproduce here for consistency with the web UI.
+                // I think that code is intending to test against multiple types but actually due to the use of || just tests the first.
+                let disallowedSubmissionTypes: Set<String> = ["on_paper"/*, "external_tool", "none", "discussion_topic", "online_quiz"*/]
+                let isReassignable = (assignment.allowedAttempts == -1 || (assignment.allowedAttempts > 1)) &&
+                assignment.dueAt != nil &&
+                Set(assignment.submissionTypes).intersection(disallowedSubmissionTypes).isEmpty
+                
+                return isReassignable
+            }
+        case .courseScoreLessThan, .courseScoreMoreThan, .all:
+            return course != nil && mode == .course
         }
+        
+        return false
     }
     
-    static func applicableFilters(assignment: Assignment?) -> [Self] {
-        if let assignment {
-            return Self.allCases.filter({ $0.shouldShow(assignment) })
-        } else {
-            return []
-        }
+    static func applicableFilters(assignment: Assignment?, course: Course?, mode: MessageMode) -> [Self] {
+        return Self.allCases.filter({ $0.shouldShow(assignment: assignment, course: course, mode: mode) })
     }
     
     // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L176
@@ -121,6 +156,12 @@ enum MessageFilter: CaseIterable, Identifiable {
             return studentAssignmentInfos.filter({ $0.grade == "incomplete" })
         case .reassigned:
             return studentAssignmentInfos.filter({ $0.redoRequest })
+        case .courseScoreLessThan:
+            return studentAssignmentInfos.filter({ $0.courseScore < score })
+        case .courseScoreMoreThan:
+            return studentAssignmentInfos.filter({ $0.courseScore > score })
+        case .all:
+            return studentAssignmentInfos
         }
     }
 }

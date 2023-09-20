@@ -117,19 +117,15 @@ class ViewModel: ObservableObject {
     var studentsMatchingFilter: [StudentAssignmentInfo] {
         var results = [StudentAssignmentInfo]()
         
-        if self.messageMode == .assignment {
-            if let messageFilter {
-                results.append(contentsOf: messageFilter.filterStudents(studentAssignmentInfos, score: messageFilterScore))
-            }
-        } else {
-            results.append(contentsOf: studentAssignmentInfos)
+        if let messageFilter {
+            results.append(contentsOf: messageFilter.filterStudents(studentAssignmentInfos, score: messageFilterScore))
         }
         
         return results
     }
     
     func fetchCourses() async -> [Course] {
-        var request = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses?include=term&per_page=100")!)
+        var request = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses?include[]=term&per_page=100")!)
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         
         do {
@@ -173,7 +169,7 @@ class ViewModel: ObservableObject {
         do {
             // Grab all students in this course (but not the test user).
             let userRequest = {
-                var userRequest = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&per_page=100")!)
+                var userRequest = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&include[]=enrollments&per_page=100")!)
                 userRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
                 return userRequest
             }()
@@ -182,7 +178,7 @@ class ViewModel: ObservableObject {
             
             var infos = [StudentAssignmentInfo]()
             for user in users {
-                infos.append(StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: nil, grade: nil, submittedAt: nil, redoRequest: false))
+                infos.append(StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: nil, grade: nil, submittedAt: nil, redoRequest: false, courseScore: user.enrollments[0].grades.currentScore))
             }
             
             return infos.sorted(by: { $0.sortableName < $1.sortableName })
@@ -231,7 +227,7 @@ class ViewModel: ObservableObject {
                 let user = users.first(where: { $0.id == displayStudent.id })
                 if let user {
                     let submission = submissions.first(where: { $0.userId == displayStudent.id })
-                    let assignmentInfo = StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: submission?.score, grade: submission?.grade, submittedAt: submission?.submittedAt, redoRequest: submission?.redoRequest ?? false)
+                    let assignmentInfo = StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: submission?.score, grade: submission?.grade, submittedAt: submission?.submittedAt, redoRequest: submission?.redoRequest ?? false, courseScore: user.enrollments[0].grades.currentScore)
                     infos.append(assignmentInfo)
                 }
             }
@@ -244,11 +240,9 @@ class ViewModel: ObservableObject {
     }
     
     func generateSubject() {
-        if let selectedAssignment {
-            if let messageFilter {
-                subject = messageFilter.subject(assignmentName: selectedAssignment.name, score: messageFilterScore)
-            } else {
-                subject = ""
+        if let messageFilter {
+            if let selectedCourse {
+                subject = messageFilter.subject(assignmentName: selectedAssignment?.name, score: messageFilterScore, courseName: selectedCourse.name)
             }
         } else {
             subject = ""
@@ -363,6 +357,8 @@ struct StudentAssignmentInfo: Hashable {
     let submittedAt: Date?
     let redoRequest: Bool
     
+    let courseScore: Double
+    
     var firstName: String {
         let formatter = PersonNameComponentsFormatter()
         let comps = formatter.personNameComponents(from: name)
@@ -379,6 +375,7 @@ struct User: Decodable, Identifiable, Hashable {
     let id: Int
     let name: String
     let sortableName: String
+    let enrollments: [Enrollment]
 }
 
 struct Submission: Decodable, Hashable {
@@ -412,16 +409,25 @@ enum Substitutions: Int, CaseIterable {
 }
 
 enum MessageMode: Int, Hashable, CaseIterable {
-    case `assignment`, general
+    case `assignment`, course
     
     var title: String {
         switch self {
         case .assignment:
             return "Based on assignment"
-        case .general:
-            return "Any students"
+        case .course:
+            return "Based on course"
         }
     }
+}
+
+struct Enrollment: Decodable, Identifiable, Hashable {
+    let id: Int
+    let grades: Grades
+}
+
+struct Grades: Decodable, Hashable {
+    let currentScore: Double
 }
 
 struct PostMessageData: Encodable {
