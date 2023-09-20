@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import os.log
+
+private let logger = Logger(subsystem: "com.ephraimkunz.StudentOutreach", category: "viewModel")
 
 class ViewModel: ObservableObject {
     @Published var accessToken = "" {
@@ -146,7 +149,7 @@ class ViewModel: ObservableObject {
             let assignments = try decoder.decode([Assignment].self, from: data)
             return assignments.sorted(by: { $0.name < $1.name })
         } catch {
-            print("Hit error fetching assignments: \(error)")
+            logger.error("Hit error fetching assignments: \(error)")
             return []
         }
     }
@@ -177,7 +180,7 @@ class ViewModel: ObservableObject {
             
             return infos
         } catch {
-            print("Hit error fetching all studentAssignmentInfos: \(error)")
+            logger.error("Hit error fetching all studentAssignmentInfos: \(error)")
             return []
         }
     }
@@ -231,7 +234,7 @@ class ViewModel: ObservableObject {
             
             return infos
         } catch {
-            print("Hit error fetching studentAssignmentInfos: \(error)")
+            logger.error("Hit error fetching studentAssignmentInfos: \(error)")
             return []
         }
     }
@@ -271,11 +274,11 @@ class ViewModel: ObservableObject {
                     let (_, response) = try await URLSession.shared.data(for: request)
                     if let httpResponse = response as? HTTPURLResponse {
                         if httpResponse.statusCode != 202 {
-                            print("Error sending message: \(response)")
+                            logger.error("Error sending message: \(response)")
                         }
                     }
                 } catch {
-                    print("Hit error posting new conversation: \(error)")
+                    logger.error("Hit error posting new conversation: \(error)")
                 }
             }
         }

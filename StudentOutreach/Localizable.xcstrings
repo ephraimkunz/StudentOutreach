@@ -4,6 +4,19 @@
     "" : {
 
     },
+    "[File a Github issue](https://github.com/ephraimkunz/StudentOutreach/issues/new/choose)" : {
+
+    },
+    "[Send me an email](mailto:kunzep@byui.edu?subject=Feedback%20or%20bug%20report%20for%20StudentOutreach)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "[Send me an email](mailto:kunzep@byui.edu?subject=Feedback%1$20or%20bug%20report%2$20for%3$20StudentOutreach)"
+          }
+        }
+      }
+    },
     "%@" : {
 
     },
@@ -45,6 +58,9 @@
     "Enter a subject line…" : {
 
     },
+    "File a bug" : {
+
+    },
     "Message" : {
 
     },
@@ -52,6 +68,9 @@
 
     },
     "Mode:" : {
+
+    },
+    "Please include a clear description of the bug you saw or the feature you are requesting, along with additional documentation like screenshots or videos." : {
 
     },
     "Recipients (%lld)" : {
