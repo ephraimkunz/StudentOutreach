@@ -10,6 +10,20 @@ import os.log
 
 private let logger = Logger(subsystem: "com.ephraimkunz.StudentOutreach", category: "viewModel")
 
+private let encoder: JSONEncoder = {
+    let encoder = JSONEncoder()
+    encoder.keyEncodingStrategy = .convertToSnakeCase
+    encoder.dateEncodingStrategy = .iso8601
+    return encoder
+}()
+
+private let decoder: JSONDecoder = {
+    let decoder = JSONDecoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+    decoder.dateDecodingStrategy = .iso8601
+    return decoder
+}()
+
 class ViewModel: ObservableObject {
     @Published var accessToken = "" {
         didSet {
@@ -48,7 +62,7 @@ class ViewModel: ObservableObject {
         }
     }
     
-    @Published var messageFilter: MessageFilter = .notSubmitted {
+    @Published var messageFilter: MessageFilter? = nil {
         didSet {
             generateSubject()
             disabledStudentIds.removeAll()
@@ -104,7 +118,9 @@ class ViewModel: ObservableObject {
         var results = [StudentAssignmentInfo]()
         
         if self.messageMode == .assignment {
-            results.append(contentsOf: messageFilter.filterStudents(studentAssignmentInfos, score: messageFilterScore))
+            if let messageFilter {
+                results.append(contentsOf: messageFilter.filterStudents(studentAssignmentInfos, score: messageFilterScore))
+            }
         } else {
             results.append(contentsOf: studentAssignmentInfos)
         }
@@ -118,9 +134,6 @@ class ViewModel: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
-            
-            let decoder = JSONDecoder()
-            decoder.keyDecodingStrategy = .convertFromSnakeCase
             
             let courses = try decoder.decode([Course].self, from: data)
             return courses.sorted { first, second in
@@ -143,11 +156,9 @@ class ViewModel: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
-            let decoder = JSONDecoder()
-            decoder.keyDecodingStrategy = .convertFromSnakeCase
             
             let assignments = try decoder.decode([Assignment].self, from: data)
-            return assignments.sorted(by: { $0.name < $1.name })
+            return assignments.filter({ $0.published }).sorted(by: { $0.name < $1.name })
         } catch {
             logger.error("Hit error fetching assignments: \(error)")
             return []
@@ -159,10 +170,6 @@ class ViewModel: ObservableObject {
             return []
         }
         
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        decoder.dateDecodingStrategy = .iso8601
-        
         do {
             // Grab all students in this course (but not the test user).
             let userRequest = {
@@ -172,13 +179,13 @@ class ViewModel: ObservableObject {
             }()
             let (userData, _) = try await URLSession.shared.data(for: userRequest)
             let users = try decoder.decode([User].self, from: userData)
-
+            
             var infos = [StudentAssignmentInfo]()
             for user in users {
-                infos.append(StudentAssignmentInfo(id: user.id, name: user.name, score: nil, submitted: false))
+                infos.append(StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: nil, grade: nil, submittedAt: nil, redoRequest: false))
             }
             
-            return infos
+            return infos.sorted(by: { $0.sortableName < $1.sortableName })
         } catch {
             logger.error("Hit error fetching all studentAssignmentInfos: \(error)")
             return []
@@ -189,10 +196,6 @@ class ViewModel: ObservableObject {
         guard let assignment = selectedAssignment, let course = selectedCourse else {
             return []
         }
-        
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        decoder.dateDecodingStrategy = .iso8601
         
         do {
             // Grab all students eligible to submit the assignment.
@@ -222,17 +225,18 @@ class ViewModel: ObservableObject {
             let displayStudents = try await decoder.decode([UserDisplay].self, from: gradeableStudentData)
             let submissions = try await decoder.decode([Submission].self, from: submissionData)
             let users = try await decoder.decode([User].self, from: userData)
-
+            
             var infos = [StudentAssignmentInfo]()
             for displayStudent in displayStudents {
                 let user = users.first(where: { $0.id == displayStudent.id })
                 if let user {
                     let submission = submissions.first(where: { $0.userId == displayStudent.id })
-                    infos.append(StudentAssignmentInfo(id: user.id, name: displayStudent.displayName, score: submission?.score, submitted: submission?.submittedAt != nil))
+                    let assignmentInfo = StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: submission?.score, grade: submission?.grade, submittedAt: submission?.submittedAt, redoRequest: submission?.redoRequest ?? false)
+                    infos.append(assignmentInfo)
                 }
             }
             
-            return infos
+            return infos.sorted(by: { $0.sortableName < $1.sortableName })
         } catch {
             logger.error("Hit error fetching studentAssignmentInfos: \(error)")
             return []
@@ -241,12 +245,16 @@ class ViewModel: ObservableObject {
     
     func generateSubject() {
         if let selectedAssignment {
-            subject = messageFilter.subject(assignmentName: selectedAssignment.name, score: messageFilterScore)
+            if let messageFilter {
+                subject = messageFilter.subject(assignmentName: selectedAssignment.name, score: messageFilterScore)
+            } else {
+                subject = ""
+            }
         } else {
             subject = ""
         }
     }
-          
+    
     @Published var sendingMessage = false
     
     func sendMessage() async {
@@ -254,23 +262,29 @@ class ViewModel: ObservableObject {
             return
         }
         
-        sendingMessage = true
+        Task { @MainActor in
+            sendingMessage = true
+        }
         
         let recipients = studentsToMessage
         let subject = subject
         let contextCode = "course_\(selectedCourse.id)"
-        for recipient in recipients {
-            let body = finalMessageBody(fullName: recipient.name, firstName: recipient.firstName)
-            
-            var request = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/conversations")!)
-            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            request.httpMethod = "POST"
-            
-            request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField:"Content-Type");
-            if let data: Data = "recipients=\(recipient.id)&subject=\(subject)&body=\(body)&context_code=\(contextCode)&mode=async&group_conversation=true&bulk_message=true".data(using: .utf8) {
-                request.httpBody = data
+        
+        if substitutionsUsed > 0 {
+            for recipient in recipients {
+                let body = finalMessageBody(fullName: recipient.name, firstName: recipient.firstName)
+                
+                var request = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/conversations")!)
+                request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+                request.httpMethod = "POST"
+                
+                request.setValue("application/json", forHTTPHeaderField:"Content-Type");
+                let postData = PostMessageData(recipients: [recipient.id], subject: subject, body: body, contextCode: contextCode)
                 
                 do {
+                    let data = try encoder.encode(postData);
+                    request.httpBody = data
+                    
                     let (_, response) = try await URLSession.shared.data(for: request)
                     if let httpResponse = response as? HTTPURLResponse {
                         if httpResponse.statusCode != 202 {
@@ -281,9 +295,35 @@ class ViewModel: ObservableObject {
                     logger.error("Hit error posting new conversation: \(error)")
                 }
             }
+        } else {
+            // No substitutions, so just send one bulk message (like the webUI does today).
+            let body = finalMessageBody(fullName: "", firstName: "")
+            
+            var request = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/conversations")!)
+            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+            request.httpMethod = "POST"
+            
+            request.setValue("application/json", forHTTPHeaderField:"Content-Type");
+            let postData = PostMessageData(recipients: recipients.map({ $0.id }), subject: subject, body: body, contextCode: contextCode)
+            
+            do {
+                let data = try encoder.encode(postData);
+                request.httpBody = data
+                
+                let (_, response) = try await URLSession.shared.data(for: request)
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode != 202 {
+                        logger.error("Error sending message: \(response)")
+                    }
+                }
+            } catch {
+                logger.error("Hit error posting new conversation: \(error)")
+            }
         }
         
-        sendingMessage = false
+        Task { @MainActor in
+            sendingMessage = false
+        }
     }
 }
 
@@ -311,126 +351,17 @@ struct Assignment: Decodable, Identifiable, Hashable {
     let allowedAttempts: Int
     let gradingType: String
     let dueAt: Date?
-}
-
-enum MessageFilter: CaseIterable, Identifiable {
-    case notSubmitted, notGraded, scoredMoreThan, scoredLessThan, markedIncomplete, reassigned
-    
-    var id: Self {
-        return self
-    }
-    
-    // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L132
-    var title: String {
-        switch self {
-        case .notSubmitted:
-            return "Have not yet submitted"
-        case .notGraded:
-            return "Have not been graded"
-        case .scoredMoreThan:
-            return "Scored more than"
-        case .scoredLessThan:
-            return "Scored less than"
-        case .markedIncomplete:
-            return "Marked incomplete"
-        case .reassigned:
-            return "Reassigned"
-        }
-    }
-    
-    // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L215
-    func subject(assignmentName: String, score: Double) -> String {
-        switch self {
-        case .notSubmitted:
-            return "No submission for \(assignmentName)"
-        case .notGraded:
-            return "No grade for \(assignmentName)"
-        case .scoredMoreThan:
-            return "Scored more than \(score) on \(assignmentName)"
-        case .scoredLessThan:
-            return "Scored less than \(score) on \(assignmentName)"
-        case .markedIncomplete:
-            return "\(assignmentName) is incomplete"
-        case .reassigned:
-            return "\(assignmentName) is reassigned"
-        }
-    }
-    
-    // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L132
-    var scoreNeeded: Bool {
-        switch self {
-        case .scoredLessThan, .scoredMoreThan:
-            return true
-        default:
-            return false
-        }
-    }
-    
-    // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L132
-    func shouldShow(_ assignment: Assignment) -> Bool {
-        switch self {
-        case .notSubmitted:
-            let disallowedSubmissionTypes: Set<String> = ["on_paper", "none", "not_graded", ""];
-            return disallowedSubmissionTypes.contains(assignment.submissionTypes[0])
-        case .notGraded:
-            return true
-        case .scoredMoreThan, .scoredLessThan:
-            let scoredRequiredGradingTypes: Set<String> = ["points", "percent", "letter_grade", "gpa_scale"]
-            let isScored = scoredRequiredGradingTypes.contains(assignment.gradingType)
-            return isScored
-        case .markedIncomplete:
-            return assignment.gradingType == "pass_fail"
-        case .reassigned:
-            let disallowedSubmissionTypes: Set<String> = ["on_paper", "external_tool", "none", "discussion_topic", "online_quiz"]
-            let isReassignable = (assignment.allowedAttempts == -1 || (assignment.allowedAttempts > 1)) &&
-            assignment.dueAt != nil &&
-            Set(assignment.submissionTypes).intersection(disallowedSubmissionTypes).isEmpty
-            
-            return isReassignable
-        }
-    }
-    
-    func applicableFilters(assignment: Assignment) -> [Self] {
-        return Self.allCases.filter({ $0.shouldShow(assignment) })
-    }
-    
-    // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L176
-    // TODO: Implement
-    func filterStudents(_ studentAssignmentInfos: [StudentAssignmentInfo], score: Double) -> [StudentAssignmentInfo] {
-        switch self {
-        case .notSubmitted:
-            return studentAssignmentInfos.filter({ !$0.submitted })
-        case .notGraded:
-            return studentAssignmentInfos.filter({ $0.score == nil })
-        case .scoredMoreThan:
-            return studentAssignmentInfos.filter { student in
-                if let studentScore = student.score {
-                    return studentScore > score
-                }
-                
-                return false
-            }
-        case .scoredLessThan:
-            return studentAssignmentInfos.filter { student in
-                if let studentScore = student.score {
-                    return studentScore < score
-                }
-                
-                return false
-            }
-        case .markedIncomplete:
-            fallthrough
-        case .reassigned:
-            return studentAssignmentInfos
-        }
-    }
+    let published: Bool
 }
 
 struct StudentAssignmentInfo: Hashable {
     let id: Int
     let name: String
+    let sortableName: String
     let score: Double?
-    let submitted: Bool
+    let grade: String?
+    let submittedAt: Date?
+    let redoRequest: Bool
     
     var firstName: String {
         let formatter = PersonNameComponentsFormatter()
@@ -447,12 +378,15 @@ struct UserDisplay: Decodable, Identifiable, Hashable {
 struct User: Decodable, Identifiable, Hashable {
     let id: Int
     let name: String
+    let sortableName: String
 }
 
 struct Submission: Decodable, Hashable {
     let userId: Int
     let score: Double?
     let submittedAt: Date?
+    let grade: String?
+    let redoRequest: Bool
 }
 
 enum Substitutions: Int, CaseIterable {
@@ -488,4 +422,14 @@ enum MessageMode: Int, Hashable, CaseIterable {
             return "Any students"
         }
     }
+}
+
+struct PostMessageData: Encodable {
+    let recipients: [Int]
+    let subject: String
+    let body: String
+    let contextCode: String
+    let mode = "async"
+    let groupConversation = true
+    let bulkMessage = true
 }
