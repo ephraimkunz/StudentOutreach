@@ -10,7 +10,8 @@ A tool for teachers to send personalized messages to students on Canvas.
 3. Click on the app icon in the Downloads folder. A scary warning will pop-up. Hit OK.
 4. Go to System Settings -> Privacy & Security -> scroll down. You will see a section that mentions StudentOutreach.
 5. Click on Open Anyway. Another scary warning will popup. Click open.
-6. You only need to do these steps once. Future launches of the app will work without any hassle.
+6. You'll need to create a canvas access token and paste it into StudentOutreach. [Here are some instructions](https://community.canvaslms.com/t5/Student-Guide/How-do-I-manage-API-access-tokens-as-a-student/ta-p/273). StudentOutreach should remember the token you enter for future app launches.
+7. You only need to do these steps once. Future launches of the app will work without any hassle.
 
 ## Bug Reports or Feature Requests
 * Email me at [kunzep@byui.edu](mailto:kunzep@byui.edu?subject=Feedback%20or%20bug%20report%20for%20StudentOutreach).
