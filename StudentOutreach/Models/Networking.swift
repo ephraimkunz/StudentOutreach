@@ -150,6 +150,7 @@ struct Networking {
         return message
     }
     
+    // See https://github.com/instructure/canvas-lms/blob/22b7677b3bd608197caf012ac5304c2d6311e94c/ui/shared/grading/messageStudentsWhoHelper.ts#L92C9-L92C9
     func sendMessage(course: Course, recipients: [StudentAssignmentInfo], subject: String, isGeneric: Bool, message: String) async {
         let contextCode = "course_\(course.id)"
         
