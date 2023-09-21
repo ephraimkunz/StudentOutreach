@@ -116,7 +116,7 @@ struct Networking {
             
             // Grab all students in this course (but not the test user).
             let userRequest = {
-                var userRequest = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&per_page=100")!)
+                var userRequest = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&include[]=enrollments&per_page=100")!)
                 userRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
                 return userRequest
             }()
