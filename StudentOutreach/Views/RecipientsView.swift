@@ -50,8 +50,8 @@ struct StudentCell: View {
     var body: some View {
         HStack {
             Text(student.name)
-                .lineLimit(1)
                 .strikethrough(disabledStudentIds.contains(student.id))
+                .lineLimit(1)
             
             Spacer()
             
