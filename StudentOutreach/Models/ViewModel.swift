@@ -62,6 +62,12 @@ class ViewModel: ObservableObject {
             disabledStudentIds.removeAll()
         }
     }
+    @Published var messageFilterScore2: Double = 0 {
+        didSet {
+            generateSubject()
+            disabledStudentIds.removeAll()
+        }
+    }
     @Published var messageMode: MessageMode = .assignment {
         didSet {
             Task { @MainActor in
@@ -99,7 +105,7 @@ class ViewModel: ObservableObject {
         var results = [StudentAssignmentInfo]()
         
         if let messageFilter {
-            results.append(contentsOf: messageFilter.filterStudents(studentAssignmentInfos, score: messageFilterScore))
+            results.append(contentsOf: messageFilter.filterStudents(studentAssignmentInfos, score: messageFilterScore, score2: messageFilterScore2))
         }
         
         return results
@@ -108,7 +114,7 @@ class ViewModel: ObservableObject {
     func generateSubject() {
         if let messageFilter {
             if let selectedCourse {
-                subject = messageFilter.subject(assignmentName: selectedAssignment?.name, score: messageFilterScore, courseName: selectedCourse.name)
+                subject = messageFilter.subject(assignmentName: selectedAssignment?.name, score: messageFilterScore, score2: messageFilterScore2, courseName: selectedCourse.name)
             }
         } else {
             subject = ""

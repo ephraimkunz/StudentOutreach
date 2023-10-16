@@ -9,7 +9,7 @@ import Foundation
 
 enum MessageFilter: CaseIterable, Identifiable {
     case notSubmitted, notGraded, scoredMoreThan, scoredLessThan, markedIncomplete, reassigned
-    case courseScoreLessThan, courseScoreMoreThan, all
+    case courseScoreLessThan, courseScoreMoreThan, courseScoreBetween, all
     
     var id: Self {
         return self
@@ -34,13 +34,15 @@ enum MessageFilter: CaseIterable, Identifiable {
             return "Course score less than"
         case .courseScoreMoreThan:
             return "Course score more than"
+        case .courseScoreBetween:
+            return "Course score is between"
         case .all:
             return "All students in course"
         }
     }
     
     // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L215
-    func subject(assignmentName: String?, score: Double, courseName: String) -> String {
+    func subject(assignmentName: String?, score: Double, score2: Double, courseName: String) -> String {
         switch self {
         case .notSubmitted:
             if let assignmentName {
@@ -70,6 +72,8 @@ enum MessageFilter: CaseIterable, Identifiable {
             return "Score in \(courseName) is less than \(score.formatted())"
         case .courseScoreMoreThan:
             return "Score in \(courseName) is more than \(score.formatted())"
+        case .courseScoreBetween:
+            return "Score in \(courseName) is more than \(score.formatted()) and less than \(score2.formatted())"
         case .all:
             return ""
         }
@@ -80,7 +84,16 @@ enum MessageFilter: CaseIterable, Identifiable {
     // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L132
     var scoreNeeded: Bool {
         switch self {
-        case .scoredLessThan, .scoredMoreThan, .courseScoreLessThan, .courseScoreMoreThan:
+        case .scoredLessThan, .scoredMoreThan, .courseScoreLessThan, .courseScoreMoreThan, .courseScoreBetween:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    var score2Needed: Bool {
+        switch self {
+        case .courseScoreBetween:
             return true
         default:
             return false
@@ -118,7 +131,7 @@ enum MessageFilter: CaseIterable, Identifiable {
                 
                 return isReassignable
             }
-        case .courseScoreLessThan, .courseScoreMoreThan, .all:
+        case .courseScoreLessThan, .courseScoreMoreThan, .courseScoreBetween, .all:
             return course != nil && mode == .course
         }
         
@@ -130,7 +143,7 @@ enum MessageFilter: CaseIterable, Identifiable {
     }
     
     // See https://github.com/instructure/canvas-lms/blob/c06e6f6b99467d601198ac4f5dd6558071a5cd3c/ui/shared/message-students-dialog/react/MessageStudentsWhoDialog.tsx#L176
-    func filterStudents(_ studentAssignmentInfos: [StudentAssignmentInfo], score: Double) -> [StudentAssignmentInfo] {
+    func filterStudents(_ studentAssignmentInfos: [StudentAssignmentInfo], score: Double, score2: Double) -> [StudentAssignmentInfo] {
         switch self {
         case .notSubmitted:
             return studentAssignmentInfos.filter({ $0.submittedAt == nil })
@@ -160,6 +173,8 @@ enum MessageFilter: CaseIterable, Identifiable {
             return studentAssignmentInfos.filter({ $0.courseScore < score })
         case .courseScoreMoreThan:
             return studentAssignmentInfos.filter({ $0.courseScore > score })
+        case .courseScoreBetween:
+            return studentAssignmentInfos.filter({ $0.courseScore > score && $0.courseScore < score2 })
         case .all:
             return studentAssignmentInfos
         }

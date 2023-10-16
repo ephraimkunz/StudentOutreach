@@ -21,7 +21,7 @@ struct FileBugButton: View {
                 Text("File a bug")
                     .font(.title)
                 
-                Text("[Send me an email](mailto:kunzep@byui.edu?subject=Feedback%20or%20bug%20report%20for%20StudentOutreach)")
+                Text("[Send an email](mailto:kunzep@byui.edu?subject=Feedback%20or%20bug%20report%20for%20StudentOutreach)")
                     .font(.headline)
                 
                 Text("[File a Github issue](https://github.com/ephraimkunz/StudentOutreach/issues/new/choose)")

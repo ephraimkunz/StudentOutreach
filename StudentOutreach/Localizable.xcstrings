@@ -7,12 +7,12 @@
     "[File a Github issue](https://github.com/ephraimkunz/StudentOutreach/issues/new/choose)" : {
 
     },
-    "[Send me an email](mailto:kunzep@byui.edu?subject=Feedback%20or%20bug%20report%20for%20StudentOutreach)" : {
+    "[Send an email](mailto:kunzep@byui.edu?subject=Feedback%20or%20bug%20report%20for%20StudentOutreach)" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "[Send me an email](mailto:kunzep@byui.edu?subject=Feedback%1$20or%20bug%20report%2$20for%3$20StudentOutreach)"
+            "value" : "[Send an email](mailto:kunzep@byui.edu?subject=Feedback%1$20or%20bug%20report%2$20for%3$20StudentOutreach)"
           }
         }
       }
@@ -46,9 +46,6 @@
     "Assignment:" : {
 
     },
-    "Course Score:" : {
-
-    },
     "Course:" : {
 
     },
@@ -67,7 +64,13 @@
     "File a bug" : {
 
     },
+    "Lower bound:" : {
+
+    },
     "Message" : {
+
+    },
+    "Message Criteria:" : {
 
     },
     "Message Students Who:" : {
@@ -151,6 +154,9 @@
           }
         }
       }
+    },
+    "Upper bound:" : {
+
     }
   },
   "version" : "1.0"
