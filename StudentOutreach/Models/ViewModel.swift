@@ -62,7 +62,7 @@ class ViewModel: ObservableObject {
             disabledStudentIds.removeAll()
         }
     }
-    @Published var messageFilterScore2: Double = 0 {
+    @Published var messageFilterScore2: Double = 100 {
         didSet {
             generateSubject()
             disabledStudentIds.removeAll()
@@ -82,10 +82,22 @@ class ViewModel: ObservableObject {
     
     @Published var searchTerm: String = ""
     
-    @Published var subject = ""
-    @Published var message = ""
+    @Published var subject = "" {
+        didSet {
+            messageSendState = .unsent
+        }
+    }
+    @Published var message = "" {
+        didSet {
+            messageSendState = .unsent
+        }
+    }
     
-    @Published var disabledStudentIds: Set<Int> = []
+    @Published var disabledStudentIds: Set<Int> = [] {
+        didSet {
+            messageSendState = .unsent
+        }
+    }
     
     var studentsToMessage: [StudentAssignmentInfo] {
         return studentsMatchingFilter.filter({ !disabledStudentIds.contains($0.id) })
@@ -121,7 +133,7 @@ class ViewModel: ObservableObject {
         }
     }
     
-    @Published var sendingMessage = false
+    @Published var messageSendState: MessageSendState = .unsent
     
     func sendMessage() async {
         guard let selectedCourse else {
@@ -129,13 +141,13 @@ class ViewModel: ObservableObject {
         }
         
         Task { @MainActor in
-            sendingMessage = true
+            messageSendState = .sending
         }
         
         await networking.sendMessage(course: selectedCourse, recipients: studentsToMessage, subject: subject, isGeneric: substitutionsUsed == 0, message: message)
 
         Task { @MainActor in
-            sendingMessage = false
+            messageSendState = .sent
         }
     }
 }
@@ -155,5 +167,20 @@ struct StudentAssignmentInfo: Hashable {
         let formatter = PersonNameComponentsFormatter()
         let comps = formatter.personNameComponents(from: name)
         return comps?.givenName ?? name
+    }
+}
+
+enum MessageSendState {
+    case unsent, sending, sent
+    
+    var title: String {
+        switch self {
+        case .unsent:
+            "Send"
+        case .sending:
+            "Sending"
+        case .sent:
+            "Message sent!"
+        }
     }
 }

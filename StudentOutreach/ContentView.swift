@@ -98,15 +98,15 @@ struct ContentView: View {
                 presentingSendConfirmation = true
             } label: {
                 HStack(spacing: 8) {
-                    Text(viewModel.sendingMessage ? "Sending" : "Send")
+                    Text(viewModel.messageSendState.title)
                     
-                    if viewModel.sendingMessage {
+                    if viewModel.messageSendState == .sending {
                         ProgressView()
                             .controlSize(.small)
                     }
                 }
             }
-            .disabled(viewModel.message.isEmpty || viewModel.studentsToMessage.isEmpty)
+            .disabled(viewModel.message.isEmpty || viewModel.studentsToMessage.isEmpty || viewModel.messageSendState != .unsent)
             .confirmationDialog("Send Message", isPresented: $presentingSendConfirmation, actions: {
                 Button("Send") {
                     Task {
