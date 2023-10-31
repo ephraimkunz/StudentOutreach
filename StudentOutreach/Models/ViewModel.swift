@@ -161,7 +161,7 @@ struct StudentAssignmentInfo: Hashable {
     let submittedAt: Date?
     let redoRequest: Bool
     
-    let courseScore: Double
+    let courseScore: Double?
     
     var firstName: String {
         let formatter = PersonNameComponentsFormatter()

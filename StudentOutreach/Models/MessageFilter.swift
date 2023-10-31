@@ -9,7 +9,7 @@ import Foundation
 
 enum MessageFilter: CaseIterable, Identifiable {
     case notSubmitted, notGraded, scoredMoreThan, scoredLessThan, markedIncomplete, reassigned
-    case courseScoreLessThan, courseScoreMoreThan, courseScoreBetween, all
+    case courseScoreLessThan, courseScoreMoreThan, courseScoreBetween, courseScoreEmpty, all
     
     var id: Self {
         return self
@@ -36,6 +36,8 @@ enum MessageFilter: CaseIterable, Identifiable {
             return "Course score more than"
         case .courseScoreBetween:
             return "Course score is between"
+        case .courseScoreEmpty:
+            return "Course score is empty"
         case .all:
             return "All students in course"
         }
@@ -74,6 +76,8 @@ enum MessageFilter: CaseIterable, Identifiable {
             return "Score in \(courseName) is more than \(score.formatted())"
         case .courseScoreBetween:
             return "Score in \(courseName) is more than \(score.formatted()) and less than \(score2.formatted())"
+        case .courseScoreEmpty:
+            return ""
         case .all:
             return ""
         }
@@ -131,7 +135,7 @@ enum MessageFilter: CaseIterable, Identifiable {
                 
                 return isReassignable
             }
-        case .courseScoreLessThan, .courseScoreMoreThan, .courseScoreBetween, .all:
+        case .courseScoreLessThan, .courseScoreMoreThan, .courseScoreBetween, .courseScoreEmpty, .all:
             return course != nil && mode == .course
         }
         
@@ -170,11 +174,31 @@ enum MessageFilter: CaseIterable, Identifiable {
         case .reassigned:
             return studentAssignmentInfos.filter({ $0.redoRequest })
         case .courseScoreLessThan:
-            return studentAssignmentInfos.filter({ $0.courseScore < score })
+            return studentAssignmentInfos.filter { sai in
+                if let courseScore = sai.courseScore {
+                    return courseScore < score
+                } else {
+                    return false
+                }
+            }
         case .courseScoreMoreThan:
-            return studentAssignmentInfos.filter({ $0.courseScore > score })
+            return studentAssignmentInfos.filter { sai in
+                if let courseScore = sai.courseScore {
+                    return courseScore > score
+                } else {
+                    return false
+                }
+            }
         case .courseScoreBetween:
-            return studentAssignmentInfos.filter({ $0.courseScore > score && $0.courseScore < score2 })
+            return studentAssignmentInfos.filter { sai in
+                if let courseScore = sai.courseScore {
+                    return courseScore > score && courseScore < score2
+                } else {
+                    return false
+                }
+            }
+        case .courseScoreEmpty:
+            return studentAssignmentInfos.filter({ $0.courseScore == nil })
         case .all:
             return studentAssignmentInfos
         }

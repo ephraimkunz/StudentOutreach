@@ -33,7 +33,7 @@ struct Enrollment: Decodable, Identifiable, Hashable {
 }
 
 struct Grades: Decodable, Hashable {
-    let currentScore: Double
+    let currentScore: Double?
 }
 
 struct Course: Decodable, Identifiable, Hashable {
