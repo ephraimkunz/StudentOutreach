@@ -156,7 +156,7 @@ enum MessageFilter: CaseIterable, Identifiable {
         case .scoredMoreThan:
             return studentAssignmentInfos.filter { student in
                 if let studentScore = student.score {
-                    return studentScore > score
+                    return studentScore > score && student.submittedAt != nil
                 }
                 
                 return false
@@ -164,7 +164,7 @@ enum MessageFilter: CaseIterable, Identifiable {
         case .scoredLessThan:
             return studentAssignmentInfos.filter { student in
                 if let studentScore = student.score {
-                    return studentScore < score
+                    return studentScore < score && student.submittedAt != nil
                 }
                 
                 return false
