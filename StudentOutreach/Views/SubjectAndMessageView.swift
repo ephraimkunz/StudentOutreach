@@ -10,6 +10,7 @@ import SwiftUI
 struct SubjectAndMessageView: View {
     @Binding var subject: String
     @Binding var message: String
+    @State private var insertText = ""
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -18,13 +19,12 @@ struct SubjectAndMessageView: View {
             }
             
             Section("Message") {
-                TextEditor(text: $message)
-                    .font(.body)
+                TokenTextEditor(fullText: $message, insertText: $insertText)
                 
                 HStack {
                     ForEach(Substitutions.allCases, id: \.self) { substitution in
                         Button(substitution.literal) {
-                            message.append(substitution.literal)
+                            insertText = substitution.literal
                         }
                         .help(substitution.explanation)
                     }

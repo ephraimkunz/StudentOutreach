@@ -17,6 +17,7 @@
 		E3679AA02AB4963800A352F0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E3679A9F2AB4963800A352F0 /* Assets.xcassets */; };
 		E3679AA42AB4963800A352F0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E3679AA32AB4963800A352F0 /* Preview Assets.xcassets */; };
 		E36CC3352ABA205F00ACF306 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36CC3342ABA205F00ACF306 /* ViewModel.swift */; };
+		E3A891872B0E618900251A22 /* TokenTextEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3A891862B0E618900251A22 /* TokenTextEditor.swift */; };
 		E3D6CFF42ABA745A0079D370 /* MessageFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D6CFF32ABA745A0079D370 /* MessageFilter.swift */; };
 		E3D6CFF62ABB34A10079D370 /* Networking.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D6CFF52ABB34A10079D370 /* Networking.swift */; };
 		E3D6CFF82ABB38E60079D370 /* Substitutions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D6CFF72ABB38E60079D370 /* Substitutions.swift */; };
@@ -37,6 +38,7 @@
 		E3679AA12AB4963800A352F0 /* StudentOutreach.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StudentOutreach.entitlements; sourceTree = "<group>"; };
 		E3679AA32AB4963800A352F0 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		E36CC3342ABA205F00ACF306 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
+		E3A891862B0E618900251A22 /* TokenTextEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenTextEditor.swift; sourceTree = "<group>"; };
 		E3D6CFF32ABA745A0079D370 /* MessageFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageFilter.swift; sourceTree = "<group>"; };
 		E3D6CFF52ABB34A10079D370 /* Networking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Networking.swift; sourceTree = "<group>"; };
 		E3D6CFF72ABB38E60079D370 /* Substitutions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Substitutions.swift; sourceTree = "<group>"; };
@@ -59,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				E30F722C2ABA6D5C00F557F0 /* SubjectAndMessageView.swift */,
+				E3A891862B0E618900251A22 /* TokenTextEditor.swift */,
 				E30F722E2ABA6DD600F557F0 /* RecipientsView.swift */,
 				E30F72302ABA6FD600F557F0 /* CoursePicker.swift */,
 				E30F72342ABA70F600F557F0 /* FileBugButton.swift */,
@@ -195,6 +198,7 @@
 				E3679A9E2AB4963700A352F0 /* ContentView.swift in Sources */,
 				E3D6CFF62ABB34A10079D370 /* Networking.swift in Sources */,
 				E3D6CFFC2ABB39290079D370 /* CanvasTypes.swift in Sources */,
+				E3A891872B0E618900251A22 /* TokenTextEditor.swift in Sources */,
 				E30F72352ABA70F600F557F0 /* FileBugButton.swift in Sources */,
 				E30F72312ABA6FD600F557F0 /* CoursePicker.swift in Sources */,
 				E30F722D2ABA6D5C00F557F0 /* SubjectAndMessageView.swift in Sources */,
