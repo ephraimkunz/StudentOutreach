@@ -73,7 +73,7 @@ struct TokenTextEditor: NSViewRepresentable {
 class TokenTextAttachmentCell: NSTextAttachmentCell {
     let attributedString: AttributedString
     
-    private static let horizontalPadding: CGFloat = 4
+    nonisolated private static let horizontalPadding: CGFloat = 4
     
     init(text: String) {
         let attributeContainer = AttributeContainer([.font: textFont, .foregroundColor: NSColor.white])
