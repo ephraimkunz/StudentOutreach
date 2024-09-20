@@ -163,7 +163,7 @@ struct Networking {
             request.httpMethod = "POST"
             
             request.setValue("application/json", forHTTPHeaderField:"Content-Type");
-            let postData = PostMessageData(recipients: recipients.map({ $0.id }), subject: subject, body: body, contextCode: contextCode)
+            let postData = PostMessageData(recipients: recipients.map({ String($0.id) }), subject: subject, body: body, contextCode: contextCode)
             
             do {
                 let data = try encoder.encode(postData);
@@ -187,7 +187,7 @@ struct Networking {
                 request.httpMethod = "POST"
                 
                 request.setValue("application/json", forHTTPHeaderField:"Content-Type");
-                let postData = PostMessageData(recipients: [recipient.id], subject: subject, body: body, contextCode: contextCode)
+                let postData = PostMessageData(recipients: [String(recipient.id)], subject: subject, body: body, contextCode: contextCode)
                 
                 do {
                     let data = try encoder.encode(postData);

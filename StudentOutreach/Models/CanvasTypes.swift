@@ -64,7 +64,7 @@ struct Assignment: Decodable, Identifiable, Hashable {
 }
 
 struct PostMessageData: Encodable {
-    let recipients: [Int]
+    let recipients: [String]
     let subject: String
     let body: String
     let contextCode: String
