@@ -168,6 +168,7 @@ struct StudentAssignmentInfo: Hashable {
         let comps = formatter.personNameComponents(from: name)
         return comps?.givenName ?? name
     }
+    let lastCourseActivityAt: Date?
 }
 
 enum MessageSendState {

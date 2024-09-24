@@ -30,6 +30,7 @@ struct Submission: Decodable, Hashable {
 struct Enrollment: Decodable, Identifiable, Hashable {
     let id: Int
     let grades: Grades
+    let lastActivityAt: Date?
 }
 
 struct Grades: Decodable, Hashable {

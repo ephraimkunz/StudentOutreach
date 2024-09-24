@@ -82,7 +82,7 @@ struct Networking {
             
             var infos = [StudentAssignmentInfo]()
             for user in users {
-                infos.append(StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: nil, grade: nil, submittedAt: nil, redoRequest: false, courseScore: user.enrollments[0].grades.currentScore))
+                infos.append(StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: nil, grade: nil, submittedAt: nil, redoRequest: false, courseScore: user.enrollments[0].grades.currentScore, lastCourseActivityAt: user.enrollments[0].lastActivityAt))
             }
             
             return infos.sorted(by: { $0.sortableName < $1.sortableName })
@@ -131,7 +131,7 @@ struct Networking {
                 let user = users.first(where: { $0.id == displayStudent.id })
                 if let user {
                     let submission = submissions.first(where: { $0.userId == displayStudent.id })
-                    let assignmentInfo = StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: submission?.score, grade: submission?.grade, submittedAt: submission?.submittedAt, redoRequest: submission?.redoRequest ?? false, courseScore: user.enrollments[0].grades.currentScore)
+                    let assignmentInfo = StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: submission?.score, grade: submission?.grade, submittedAt: submission?.submittedAt, redoRequest: submission?.redoRequest ?? false, courseScore: user.enrollments[0].grades.currentScore, lastCourseActivityAt: user.enrollments[0].lastActivityAt)
                     infos.append(assignmentInfo)
                 }
             }
