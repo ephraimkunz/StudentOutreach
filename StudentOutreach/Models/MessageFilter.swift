@@ -9,7 +9,7 @@ import Foundation
 
 enum MessageFilter: CaseIterable, Identifiable {
     case notSubmitted, notGraded, scoredMoreThan, scoredLessThan, markedIncomplete, reassigned
-    case courseScoreLessThan, courseScoreMoreThan, courseScoreBetween, courseScoreEmpty, NoCourseActivitySevenDays, all
+    case courseScoreLessThan, courseScoreMoreThan, courseScoreBetween, courseScoreEmpty, noCourseActivitySevenDays, all
     
     var id: Self {
         return self
@@ -38,7 +38,7 @@ enum MessageFilter: CaseIterable, Identifiable {
             return "Course score is between"
         case .courseScoreEmpty:
             return "Course score is empty"
-        case .NoCourseActivitySevenDays:
+        case .noCourseActivitySevenDays:
             return "No course participation (7 days)"
         case .all:
             return "All students in course"
@@ -80,7 +80,7 @@ enum MessageFilter: CaseIterable, Identifiable {
             return "Score in \(courseName) is more than \(score.formatted()) and less than \(score2.formatted())"
         case .courseScoreEmpty:
             return ""
-        case .NoCourseActivitySevenDays:
+        case .noCourseActivitySevenDays:
             return "\(courseName) Participation"
         case .all:
             return ""
@@ -139,7 +139,7 @@ enum MessageFilter: CaseIterable, Identifiable {
                 
                 return isReassignable
             }
-        case .courseScoreLessThan, .courseScoreMoreThan, .courseScoreBetween, .courseScoreEmpty, .NoCourseActivitySevenDays, .all:
+        case .courseScoreLessThan, .courseScoreMoreThan, .courseScoreBetween, .courseScoreEmpty, .noCourseActivitySevenDays, .all:
             return course != nil && mode == .course
         }
         
@@ -203,7 +203,7 @@ enum MessageFilter: CaseIterable, Identifiable {
             }
         case .courseScoreEmpty:
             return studentAssignmentInfos.filter({ $0.courseScore == nil })
-        case .NoCourseActivitySevenDays:
+        case .noCourseActivitySevenDays:
             return studentAssignmentInfos.filter {
                 guard let lastActivity = $0.lastCourseActivityAt else {
                     // If lastCourseActivityAt is nil, include it in the filter.
