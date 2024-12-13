@@ -43,6 +43,12 @@ struct Course: Decodable, Identifiable, Hashable {
     let courseCode: String?
     let term: Term
     let workflowState: String
+    let sections: [Section]
+}
+
+struct Section: Decodable, Identifiable, Hashable {
+    let id: Int
+    let name: String
 }
 
 struct Term: Decodable, Identifiable, Hashable {

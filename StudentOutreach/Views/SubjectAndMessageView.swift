@@ -14,11 +14,11 @@ struct SubjectAndMessageView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            Section("Subject") {
+            SwiftUI.Section("Subject") {
                 TextField("Subject", text: $subject, prompt: Text("Enter a subject line…"))
             }
             
-            Section("Message") {
+            SwiftUI.Section("Message") {
                 TokenTextEditor(fullText: $message, insertText: $insertText)
                 
                 HStack {

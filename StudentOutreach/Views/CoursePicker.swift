@@ -18,20 +18,21 @@ struct CoursePicker: View {
             Text(verbatim: "")
                 .tag(nil as Course?)
             ForEach(courseWorkflowStates, id: \.self) { courseWorkflowState in
-                Section(courseWorkflowState.localizedCapitalized) {
+                SwiftUI.Section(courseWorkflowState.localizedCapitalized) {
                     ForEach(courses.filter({ $0.workflowState == courseWorkflowState })) { course in
                         Group {
+                            let sectionName = " - \(course.sections.first?.name ?? "")"
                             if let courseCode = course.courseCode, courseCode != course.name {
                                 if course.term.isDefaultTerm {
-                                    Text("\(courseCode) - \(course.name)")
+                                    Text("\(courseCode) - \(course.name)" + sectionName)
                                 } else {
-                                    Text("\(courseCode) - \(course.name) - \(course.term.name)")
+                                    Text("\(courseCode) - \(course.name) - \(course.term.name)" + sectionName)
                                 }
                             } else {
                                 if course.term.isDefaultTerm {
-                                    Text("\(course.name)")
+                                    Text("\(course.name)" + sectionName)
                                 } else {
-                                    Text("\(course.name) - \(course.term.name)")
+                                    Text("\(course.name) - \(course.term.name)" + sectionName)
                                 }
                             }
                         }

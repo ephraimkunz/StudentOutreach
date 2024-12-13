@@ -28,7 +28,7 @@ struct Networking {
     }()
     
     func fetchCourses() async -> [Course] {
-        var request = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses?include[]=term&per_page=100")!)
+        var request = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses?enrollment_type=teacher&enrollment_state=active&include[]=term&include[]=sections&per_page=100")!)
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         
         do {
@@ -36,8 +36,8 @@ struct Networking {
             
             let courses = try decoder.decode([Course].self, from: data)
             return courses.sorted { first, second in
-                let firstString = (first.courseCode ?? "") + first.name + (first.term.isDefaultTerm ? "" : first.term.name)
-                let secondString = (second.courseCode ?? "") + second.name + (second.term.isDefaultTerm ? "" : second.term.name)
+                let firstString = (first.courseCode ?? "") + first.name + (first.term.isDefaultTerm ? "" : first.term.name) + (first.sections.first?.name ?? "")
+                let secondString = (second.courseCode ?? "") + second.name + (second.term.isDefaultTerm ? "" : second.term.name) + (second.sections.first?.name ?? "")
                 return firstString < secondString
             }
         } catch {
