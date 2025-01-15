@@ -26,7 +26,7 @@ class ViewModel: ObservableObject {
         didSet {
             Task { @MainActor in
                 if messageMode == .assignment {
-                    assignments = await networking.fetchAssignments(course: selectedCourse)
+                    assignments = await networking.fetchAssignmentsViaAssignmentGroups(course: selectedCourse)
                 } else {
                     studentAssignmentInfos = await networking.fetchAllStudentAssignmentInfos(course: selectedCourse)
                 }
@@ -72,7 +72,7 @@ class ViewModel: ObservableObject {
         didSet {
             Task { @MainActor in
                 if messageMode == .assignment {
-                    assignments = await networking.fetchAssignments(course: selectedCourse)
+                    assignments = await networking.fetchAssignmentsViaAssignmentGroups(course: selectedCourse)
                 } else {
                     studentAssignmentInfos = await networking.fetchAllStudentAssignmentInfos(course: selectedCourse)
                 }

@@ -46,6 +46,7 @@ struct Networking {
         }
     }
     
+    // The assignments endpoint currently returns a 500 error. See the bug tracking this: https://github.com/instructure/canvas-lms/issues/2436
     func fetchAssignments(course: Course?) async -> [Assignment] {
         guard let course else {
             return []
@@ -58,6 +59,27 @@ struct Networking {
             let (data, _) = try await URLSession.shared.data(for: request)
             
             let assignments = try decoder.decode([Assignment].self, from: data)
+            return assignments.filter({ $0.published }).sorted(by: { $0.name < $1.name })
+        } catch {
+            logger.error("Hit error fetching assignments: \(error)")
+            return []
+        }
+    }
+    
+    // This is the workaround for the above fetchAssignments issue.
+    func fetchAssignmentsViaAssignmentGroups(course: Course?) async -> [Assignment] {
+        guard let course else {
+            return []
+        }
+        
+        var request = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses/\(course.id)/assignment_groups?include[]=assignments&per_page=100")!)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            
+            let assignmentGroups = try decoder.decode([AssignmentGroup].self, from: data)
+            let assignments = assignmentGroups.flatMap({ $0.assignments })
             return assignments.filter({ $0.published }).sorted(by: { $0.name < $1.name })
         } catch {
             logger.error("Hit error fetching assignments: \(error)")

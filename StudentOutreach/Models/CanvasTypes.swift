@@ -70,6 +70,11 @@ struct Assignment: Decodable, Identifiable, Hashable {
     let published: Bool
 }
 
+struct AssignmentGroup: Decodable, Identifiable, Hashable {
+    let id: Int
+    let assignments: [Assignment]
+}
+
 struct PostMessageData: Encodable {
     let recipients: [String]
     let subject: String
