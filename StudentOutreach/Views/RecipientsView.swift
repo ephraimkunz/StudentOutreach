@@ -45,9 +45,7 @@ struct RecipientsView: View {
 struct StudentCell: View {
     @Binding var disabledStudentIds: Set<Int>
     let student: StudentAssignmentInfo
-    
-    @State private var toggleEnabled = false
-    
+        
     var body: some View {
         HStack {
             Text(student.name)
@@ -57,25 +55,15 @@ struct StudentCell: View {
             Spacer()
             
             Toggle("Enabled", isOn: Binding(get: {
-                toggleEnabled
+                !disabledStudentIds.contains(student.id)
             }, set: { newValue in
-                updateToggleUserInteraction(toggleOn: newValue)
+                if newValue {
+                    disabledStudentIds.remove(student.id)
+                } else {
+                    disabledStudentIds.insert(student.id)
+                }
             }))
             .labelsHidden()
-        }
-        .task {
-            toggleEnabled = !disabledStudentIds.contains(student.id)
-        }
-        .onChange(of: disabledStudentIds) {
-            toggleEnabled = !disabledStudentIds.contains(student.id)
-        }
-    }
-    
-    func updateToggleUserInteraction(toggleOn: Bool) {
-        if toggleOn {
-            disabledStudentIds.remove(student.id)
-        } else {
-            disabledStudentIds.insert(student.id)
         }
     }
 }
