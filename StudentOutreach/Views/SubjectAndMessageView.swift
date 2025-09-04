@@ -16,6 +16,7 @@ struct SubjectAndMessageView: View {
         VStack(alignment: .leading) {
             SwiftUI.Section("Subject") {
                 TextField("Subject", text: $subject, prompt: Text("Enter a subject line…"))
+                    .padding(.bottom, 8)
             }
             
             SwiftUI.Section("Message") {

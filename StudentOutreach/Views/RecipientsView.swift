@@ -25,6 +25,7 @@ struct RecipientsView: View {
                     StudentCell(disabledStudentIds: $disabledStudentIds, student: student)
                 }
             }
+            .border(Color(NSColor.secondarySystemFill), width: 1)
             
             HStack {
                 Button("Enable All") {
@@ -55,27 +56,26 @@ struct StudentCell: View {
             
             Spacer()
             
-            Toggle("Enabled", isOn: $toggleEnabled)
-                .labelsHidden()
+            Toggle("Enabled", isOn: Binding(get: {
+                toggleEnabled
+            }, set: { newValue in
+                updateToggleUserInteraction(toggleOn: newValue)
+            }))
+            .labelsHidden()
         }
         .task {
-            updateToggleEnabled()
+            toggleEnabled = !disabledStudentIds.contains(student.id)
         }
-        .onChange(of: disabledStudentIds) { newValue in
-            updateToggleEnabled()
-        }
-        .onChange(of: toggleEnabled) { newValue in
-            if disabledStudentIds.contains(student.id) {
-                disabledStudentIds.remove(student.id)
-            } else {
-                disabledStudentIds.insert(student.id)
-            }
-            
-            updateToggleEnabled()
+        .onChange(of: disabledStudentIds) {
+            toggleEnabled = !disabledStudentIds.contains(student.id)
         }
     }
     
-    func updateToggleEnabled() {
-        toggleEnabled = !disabledStudentIds.contains(student.id)
+    func updateToggleUserInteraction(toggleOn: Bool) {
+        if toggleOn {
+            disabledStudentIds.remove(student.id)
+        } else {
+            disabledStudentIds.insert(student.id)
+        }
     }
 }

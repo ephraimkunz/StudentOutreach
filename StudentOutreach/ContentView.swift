@@ -131,8 +131,8 @@ struct ContentView: View {
         .task {
             viewModel.accessToken = accessToken
         }
-        .onChange(of: viewModel.accessToken) { newAccessToken in
-            accessToken = newAccessToken
+        .onChange(of: viewModel.accessToken) {
+            accessToken = viewModel.accessToken
         }
         .toolbar {
             FileBugButton()

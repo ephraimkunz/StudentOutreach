@@ -15,7 +15,11 @@ struct TokenTextEditor: NSViewRepresentable {
         
     func makeNSView(context: Context) -> NSScrollView {
         let scrollableTextView = NSTextView.scrollableTextView()
+        scrollableTextView.borderType = .bezelBorder
+        
         let textView = scrollableTextView.documentView as! NSTextView
+        textView.isContinuousSpellCheckingEnabled = true
+        textView.isGrammarCheckingEnabled = true
         textView.font = textFont
         textView.delegate = context.coordinator
         textView.string = fullText
@@ -91,11 +95,11 @@ class TokenTextAttachmentCell: NSTextAttachmentCell {
     }
     
     override func draw(withFrame cellFrame: NSRect, in controlView: NSView?) {
-        let roundedRect = NSBezierPath(roundedRect: cellFrame, xRadius: 4, yRadius: 4)
+        let roundedRect = NSBezierPath(roundedRect: cellFrame, xRadius: 5, yRadius: 5)
         NSColor.controlAccentColor.setFill()
         roundedRect.fill()
         
-        let textRect = cellFrame.insetBy(dx: Self.horizontalPadding, dy: 0)
+        let textRect = cellFrame.insetBy(dx: Self.horizontalPadding, dy: -1)
         NSAttributedString(attributedString).draw(in: textRect)
     }
     
