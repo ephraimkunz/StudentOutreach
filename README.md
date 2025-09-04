@@ -14,7 +14,7 @@ A tool for teachers to send personalized messages to students on Canvas.
 7. You only need to do these steps once. Future launches of the app will work without any hassle.
 
 ## Bug Reports or Feature Requests
-* Email me at [kunzep@byui.edu](mailto:kunzep@byui.edu?subject=Feedback%20or%20bug%20report%20for%20StudentOutreach).
+* Email me at [kunzep@byui.edu](mailto:ekunz@byupathway.edu?subject=Feedback%20or%20bug%20report%20for%20StudentOutreach).
 * File a [Github Issue](https://github.com/ephraimkunz/StudentOutreach/issues/new/choose).
 
 ## Screenshots
