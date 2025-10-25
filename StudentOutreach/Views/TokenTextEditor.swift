@@ -99,11 +99,11 @@ final class TokenTextAttachmentCell: NSTextAttachmentCell {
   }
 
   override init(textCell _: String) {
-    fatalError()
+    fatalError("Using textCell initializer for TokenTextAttachmentCell is not allowed")
   }
 
   required init(coder _: NSCoder) {
-    fatalError()
+      fatalError("Using coder initializer for TokenTextAttachmentCell is not allowed")
   }
 
   // MARK: Internal

@@ -22,6 +22,12 @@ final class ViewModel: ObservableObject {
 
   @Published var messageSendState = MessageSendState.unsent
 
+  @Published var disabledStudentIds = Set<Int>() {
+    didSet {
+      messageSendState = .unsent
+    }
+  }
+
   @Published var accessToken = "" {
     didSet {
       networking = Networking(accessToken: accessToken)
@@ -111,12 +117,6 @@ final class ViewModel: ObservableObject {
   }
 
   @Published var message = "" {
-    didSet {
-      messageSendState = .unsent
-    }
-  }
-
-  @Published var disabledStudentIds = Set<Int>() {
     didSet {
       messageSendState = .unsent
     }

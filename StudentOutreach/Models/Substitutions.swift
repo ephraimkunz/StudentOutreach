@@ -11,6 +11,8 @@ enum Substitutions: Int, CaseIterable {
   case firstName
   case fullName
 
+  // MARK: Internal
+
   var literal: String {
     switch self {
     case .fullName:
