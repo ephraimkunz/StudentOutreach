@@ -5,6 +5,8 @@
 //  Created by Ephraim Kunz on 11/22/23.
 //
 
+#if os(macOS)
+
 import SwiftUI
 
 private let textFont = NSFont.preferredFont(forTextStyle: .body)
@@ -103,7 +105,7 @@ final class TokenTextAttachmentCell: NSTextAttachmentCell {
   }
 
   required init(coder _: NSCoder) {
-      fatalError("Using coder initializer for TokenTextAttachmentCell is not allowed")
+    fatalError("Using coder initializer for TokenTextAttachmentCell is not allowed")
   }
 
   // MARK: Internal
@@ -136,3 +138,16 @@ final class TokenTextAttachmentCell: NSTextAttachmentCell {
   nonisolated private static let horizontalPadding: CGFloat = 4
 
 }
+#else
+import SwiftUI
+
+struct TokenTextEditor: View {
+  @Binding var fullText: String
+  @Binding var insertText: String
+
+  var body: some View {
+    TextEditor(text: $fullText)
+  }
+}
+
+#endif

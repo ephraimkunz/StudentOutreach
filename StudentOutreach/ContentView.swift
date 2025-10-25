@@ -155,7 +155,7 @@ struct ContentView: View {
             .padding(10)
         }
 
-        if #available(macOS 26.0, *) {
+        if #available(macOS 26.0, iOS 26.0, *) {
           ToolbarSpacer(.fixed)
         }
       }

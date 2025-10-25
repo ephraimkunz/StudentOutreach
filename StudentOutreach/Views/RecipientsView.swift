@@ -24,13 +24,22 @@ struct RecipientsView: View {
 
       List {
         ForEach(
-          students.filter { searchTerm.isEmpty ? true : $0.name.lowercased().contains(searchTerm.lowercased()) },
+          students.filter {
+            searchTerm.isEmpty
+              ? true
+              : $0.name.lowercased().contains(
+                searchTerm.lowercased()
+              )
+          },
           id: \.self,
         ) { student in
-          StudentCell(disabledStudentIds: $disabledStudentIds, student: student)
+          StudentCell(
+            disabledStudentIds: $disabledStudentIds,
+            student: student,
+          )
         }
       }
-      .border(Color(NSColor.secondarySystemFill), width: 1)
+      .border(borderColor, width: 1)
 
       HStack {
         Button("Enable All") {
@@ -44,6 +53,14 @@ struct RecipientsView: View {
         .disabled(disabledStudentIds.count == students.count)
       }
     }
+  }
+
+  private var borderColor: Color {
+    #if os(macOS)
+    Color(NSColor.secondarySystemFill)
+    #else
+    Color(UIColor.secondarySystemFill)
+    #endif
   }
 }
 
@@ -62,15 +79,21 @@ struct StudentCell: View {
 
       Spacer()
 
-      Toggle("Enabled", isOn: Binding(get: {
-        !disabledStudentIds.contains(student.id)
-      }, set: { newValue in
-        if newValue {
-          disabledStudentIds.remove(student.id)
-        } else {
-          disabledStudentIds.insert(student.id)
-        }
-      }))
+      Toggle(
+        "Enabled",
+        isOn: Binding(
+          get: {
+            !disabledStudentIds.contains(student.id)
+          },
+          set: { newValue in
+            if newValue {
+              disabledStudentIds.remove(student.id)
+            } else {
+              disabledStudentIds.insert(student.id)
+            }
+          },
+        ),
+      )
       .labelsHidden()
     }
   }
