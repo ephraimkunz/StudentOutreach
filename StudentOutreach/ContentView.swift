@@ -8,148 +8,168 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var viewModel = ViewModel()
-    @AppStorage("access-token") private var accessToken: String = ""
-    @State private var presentingSendConfirmation = false
-        
-    var formSection: some View {
-        Form {
-            TextField("Access Token:", text: $viewModel.accessToken)
-            
-            CoursePicker(courses: viewModel.courses, selectedCourse: $viewModel.selectedCourse)
-            
-            Picker("Mode:", selection: $viewModel.messageMode) {
-                ForEach(MessageMode.allCases, id: \.self) { mode in
-                    Text(mode.title)
-                }
-            }
-            
-            if viewModel.messageMode == .assignment {
-                Picker("Assignment:", selection: $viewModel.selectedAssignment) {
-                    Text(verbatim: "")
-                        .tag(nil as Assignment?)
-                    ForEach(viewModel.assignments) { assignment in
-                        Text(assignment.name)
-                            .tag(assignment as Assignment?)
-                    }
-                }
-                
-                Picker("Message Students Who:", selection: $viewModel.messageFilter) {
-                    Text(verbatim: "")
-                        .tag(nil as MessageFilter?)
-                    ForEach(MessageFilter.applicableFilters(assignment: viewModel.selectedAssignment, course: viewModel.selectedCourse, mode: viewModel.messageMode)) { filter in
-                        Text(filter.title)
-                            .tag(filter as MessageFilter?)
-                    }
-                }
-                
-                if let messageFilter = viewModel.messageFilter, messageFilter.scoreNeeded {
-                    TextField("Score:", value: $viewModel.messageFilterScore, formatter: NumberFormatter())
-#if !os(macOS)
-                        .keyboardType(.numberPad)
-#endif
-                }
-            } else {
-                Picker("Message Criteria:", selection: $viewModel.messageFilter) {
-                    Text(verbatim: "")
-                        .tag(nil as MessageFilter?)
-                    ForEach(MessageFilter.applicableFilters(assignment: viewModel.selectedAssignment, course: viewModel.selectedCourse, mode: viewModel.messageMode)) { filter in
-                        Text(filter.title)
-                            .tag(filter as MessageFilter?)
-                    }
-                }
-                
-                if let messageFilter = viewModel.messageFilter, messageFilter.score2Needed {
-                    TextField("Lower bound:", value: $viewModel.messageFilterScore, formatter: NumberFormatter())
-#if !os(macOS)
-                        .keyboardType(.numberPad)
-#endif
-                    TextField("Upper bound:", value: $viewModel.messageFilterScore2, formatter: NumberFormatter())
-#if !os(macOS)
-                        .keyboardType(.numberPad)
-#endif
-                } else if let messageFilter = viewModel.messageFilter, messageFilter.scoreNeeded {
-                    TextField("Score:", value: $viewModel.messageFilterScore, formatter: NumberFormatter())
-#if !os(macOS)
-                        .keyboardType(.numberPad)
-#endif
-                }
-            }
+
+  // MARK: Internal
+
+  var formSection: some View {
+    Form {
+      TextField("Access Token:", text: $viewModel.accessToken)
+
+      CoursePicker(courses: viewModel.courses, selectedCourse: $viewModel.selectedCourse)
+
+      Picker("Mode:", selection: $viewModel.messageMode) {
+        ForEach(MessageMode.allCases, id: \.self) { mode in
+          Text(mode.title)
         }
+      }
+
+      if viewModel.messageMode == .assignment {
+        Picker("Assignment:", selection: $viewModel.selectedAssignment) {
+          Text(verbatim: "")
+            .tag(nil as Assignment?)
+          ForEach(viewModel.assignments) { assignment in
+            Text(assignment.name)
+              .tag(assignment as Assignment?)
+          }
+        }
+
+        Picker("Message Students Who:", selection: $viewModel.messageFilter) {
+          Text(verbatim: "")
+            .tag(nil as MessageFilter?)
+          ForEach(MessageFilter.applicableFilters(
+            assignment: viewModel.selectedAssignment,
+            course: viewModel.selectedCourse,
+            mode: viewModel.messageMode,
+          )) { filter in
+            Text(filter.title)
+              .tag(filter as MessageFilter?)
+          }
+        }
+
+        if let messageFilter = viewModel.messageFilter, messageFilter.scoreNeeded {
+          TextField("Score:", value: $viewModel.messageFilterScore, formatter: NumberFormatter())
+          #if !os(macOS)
+            .keyboardType(.numberPad)
+          #endif
+        }
+      } else {
+        Picker("Message Criteria:", selection: $viewModel.messageFilter) {
+          Text(verbatim: "")
+            .tag(nil as MessageFilter?)
+          ForEach(MessageFilter.applicableFilters(
+            assignment: viewModel.selectedAssignment,
+            course: viewModel.selectedCourse,
+            mode: viewModel.messageMode,
+          )) { filter in
+            Text(filter.title)
+              .tag(filter as MessageFilter?)
+          }
+        }
+
+        if let messageFilter = viewModel.messageFilter, messageFilter.score2Needed {
+          TextField("Lower bound:", value: $viewModel.messageFilterScore, formatter: NumberFormatter())
+          #if !os(macOS)
+            .keyboardType(.numberPad)
+          #endif
+          TextField("Upper bound:", value: $viewModel.messageFilterScore2, formatter: NumberFormatter())
+          #if !os(macOS)
+            .keyboardType(.numberPad)
+          #endif
+        } else if let messageFilter = viewModel.messageFilter, messageFilter.scoreNeeded {
+          TextField("Score:", value: $viewModel.messageFilterScore, formatter: NumberFormatter())
+          #if !os(macOS)
+            .keyboardType(.numberPad)
+          #endif
+        }
+      }
     }
-    
-    var messageSection: some View {
-        HStack(alignment: .top) {
-            RecipientsView(students: viewModel.studentsMatchingFilter, enabledStudentsCount: viewModel.studentsToMessage.count, disabledStudentIds: $viewModel.disabledStudentIds)
-                .frame(width: 230)
-            
-            Divider()
-            
-            SubjectAndMessageView(subject: $viewModel.subject, message: $viewModel.message)
-        }
-        .frame(minWidth: 600, minHeight: 300)
+  }
+
+  var messageSection: some View {
+    HStack(alignment: .top) {
+      RecipientsView(
+        students: viewModel.studentsMatchingFilter,
+        enabledStudentsCount: viewModel.studentsToMessage.count,
+        disabledStudentIds: $viewModel.disabledStudentIds,
+      )
+      .frame(width: 230)
+
+      Divider()
+
+      SubjectAndMessageView(subject: $viewModel.subject, message: $viewModel.message)
     }
-    
-    var sendSection: some View {
-        HStack {
-            Spacer()
-            
-            Button {
-                presentingSendConfirmation = true
-            } label: {
-                HStack(spacing: 8) {
-                    Text(viewModel.messageSendState.title)
-                    
-                    if viewModel.messageSendState == .sending {
-                        ProgressView()
-                            .controlSize(.small)
-                    }
-                }
-            }
-            .disabled(viewModel.message.isEmpty || viewModel.studentsToMessage.isEmpty || viewModel.messageSendState != .unsent)
-            .confirmationDialog("Send Message", isPresented: $presentingSendConfirmation, actions: {
-                Button("Send") {
-                    Task {
-                        await viewModel.sendMessage()
-                    }
-                }
-            }, message: {
-                Text("This message will be sent to \(viewModel.studentsToMessage.count) recipients. The message is using \(viewModel.substitutionsUsed) substitutions.")
-            })
+    .frame(minWidth: 600, minHeight: 300)
+  }
+
+  var sendSection: some View {
+    HStack {
+      Spacer()
+
+      Button {
+        presentingSendConfirmation = true
+      } label: {
+        HStack(spacing: 8) {
+          Text(viewModel.messageSendState.title)
+
+          if viewModel.messageSendState == .sending {
+            ProgressView()
+              .controlSize(.small)
+          }
         }
+      }
+      .disabled(viewModel.message.isEmpty || viewModel.studentsToMessage.isEmpty || viewModel.messageSendState != .unsent)
+      .confirmationDialog("Send Message", isPresented: $presentingSendConfirmation, actions: {
+        Button("Send") {
+          Task {
+            await viewModel.sendMessage()
+          }
+        }
+      }, message: {
+        Text(
+          "This message will be sent to \(viewModel.studentsToMessage.count) recipients. The message is using \(viewModel.substitutionsUsed) substitutions."
+        )
+      })
     }
-    
-    var body: some View {
-        VStack(spacing: 30) {
-            formSection
-            
-            messageSection
-            
-            sendSection
-        }
-        .padding()
-        .task {
-            viewModel.accessToken = accessToken
-        }
-        .onChange(of: viewModel.accessToken) {
-            accessToken = viewModel.accessToken
-        }
-        .toolbar {
-            if viewModel.waitingForNetwork {
-                ToolbarItem {
-                    ProgressView()
-                        .controlSize(.small)
-                        .padding(10)
-                }
-                
-                if #available(macOS 26.0, *) {
-                    ToolbarSpacer(.fixed)
-                }
-            }
-            
-            ToolbarItem {
-                FileBugButton()
-            }
-        }
+  }
+
+  var body: some View {
+    VStack(spacing: 30) {
+      formSection
+
+      messageSection
+
+      sendSection
     }
+    .padding()
+    .task {
+      viewModel.accessToken = accessToken
+    }
+    .onChange(of: viewModel.accessToken) {
+      accessToken = viewModel.accessToken
+    }
+    .toolbar {
+      if viewModel.waitingForNetwork {
+        ToolbarItem {
+          ProgressView()
+            .controlSize(.small)
+            .padding(10)
+        }
+
+        if #available(macOS 26.0, *) {
+          ToolbarSpacer(.fixed)
+        }
+      }
+
+      ToolbarItem {
+        FileBugButton()
+      }
+    }
+  }
+
+  // MARK: Private
+
+  @StateObject private var viewModel = ViewModel()
+  @AppStorage("access-token") private var accessToken = ""
+  @State private var presentingSendConfirmation = false
+
 }

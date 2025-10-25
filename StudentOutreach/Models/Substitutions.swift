@@ -8,23 +8,24 @@
 import Foundation
 
 enum Substitutions: Int, CaseIterable {
-    case firstName, fullName
-    
-    var literal: String {
-        switch self {
-        case .fullName:
-            return "<student full name>"
-        case .firstName:
-            return "<student first name>"
-        }
+  case firstName
+  case fullName
+
+  var literal: String {
+    switch self {
+    case .fullName:
+      "<student full name>"
+    case .firstName:
+      "<student first name>"
     }
-    
-    var explanation: String {
-        switch self {
-        case .fullName:
-            return "Insert student's full name"
-        case .firstName:
-            return "Insert student's first name"
-        }
+  }
+
+  var explanation: String {
+    switch self {
+    case .fullName:
+      "Insert student's full name"
+    case .firstName:
+      "Insert student's first name"
     }
+  }
 }

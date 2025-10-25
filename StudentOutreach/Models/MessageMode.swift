@@ -8,14 +8,15 @@
 import Foundation
 
 enum MessageMode: Int, Hashable, CaseIterable {
-    case `assignment`, course
-    
-    var title: String {
-        switch self {
-        case .assignment:
-            return "Based on assignment"
-        case .course:
-            return "Based on course"
-        }
+  case `assignment`
+  case course
+
+  var title: String {
+    switch self {
+    case .assignment:
+      "Based on assignment"
+    case .course:
+      "Based on course"
     }
+  }
 }

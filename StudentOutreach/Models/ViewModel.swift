@@ -8,190 +8,227 @@
 import Foundation
 import os.log
 
-class ViewModel: ObservableObject {
-    private var networking = Networking(accessToken: "")
-    
-    @Published var waitingForNetwork = false
-    
-    @Published var accessToken = "" {
-        didSet {
-            networking = Networking(accessToken: accessToken)
-            
-            Task { @MainActor in
-                waitingForNetwork = true
-                courses = await networking.fetchCourses()
-                waitingForNetwork = false
-            }
-        }
-    }
-    
-    @Published var courses: [Course] = []
-    @Published var selectedCourse: Course? = nil {
-        didSet {
-            Task { @MainActor in
-                waitingForNetwork = true
-                if messageMode == .assignment {
-                    assignments = await networking.fetchAssignments(course: selectedCourse)
-                } else {
-                    studentAssignmentInfos = await networking.fetchAllStudentAssignmentInfos(course: selectedCourse)
-                }
-                waitingForNetwork = false
-            }
-        }
-    }
-    
-    @Published var assignments: [Assignment] = []
-    @Published var selectedAssignment: Assignment? = nil {
-        didSet {
-            Task { @MainActor in
-                waitingForNetwork = true
-                studentAssignmentInfos = await networking.fetchStudentAssignmentInfos(assignment: selectedAssignment, course: selectedCourse)
-                waitingForNetwork = false
-            }
-            
-            generateSubject()
-        }
-    }
-    @Published var studentAssignmentInfos: [StudentAssignmentInfo] = [] {
-        didSet {
-            disabledStudentIds.removeAll()
-        }
-    }
-    
-    @Published var messageFilter: MessageFilter? = nil {
-        didSet {
-            generateSubject()
-            disabledStudentIds.removeAll()
-        }
-    }
-    @Published var messageFilterScore: Double = 0 {
-        didSet {
-            generateSubject()
-            disabledStudentIds.removeAll()
-        }
-    }
-    @Published var messageFilterScore2: Double = 100 {
-        didSet {
-            generateSubject()
-            disabledStudentIds.removeAll()
-        }
-    }
-    @Published var messageMode: MessageMode = .assignment {
-        didSet {
-            Task { @MainActor in
-                waitingForNetwork = true
-                if messageMode == .assignment {
-                    assignments = await networking.fetchAssignments(course: selectedCourse)
-                } else {
-                    studentAssignmentInfos = await networking.fetchAllStudentAssignmentInfos(course: selectedCourse)
-                }
-                waitingForNetwork = false
-            }
-        }
-    }
-    
-    @Published var searchTerm: String = ""
-    
-    @Published var subject = "" {
-        didSet {
-            messageSendState = .unsent
-        }
-    }
-    @Published var message = "" {
-        didSet {
-            messageSendState = .unsent
-        }
-    }
-    
-    @Published var disabledStudentIds: Set<Int> = [] {
-        didSet {
-            messageSendState = .unsent
-        }
-    }
-    
-    var studentsToMessage: [StudentAssignmentInfo] {
-        return studentsMatchingFilter.filter({ !disabledStudentIds.contains($0.id) })
-    }
-    
-    var substitutionsUsed: Int {
-        var count = 0
-        for substitution in Substitutions.allCases {
-            let comps = message.components(separatedBy: substitution.literal)
-            count += comps.count - 1
-        }
-        
-        return count
-    }
-    
-    var studentsMatchingFilter: [StudentAssignmentInfo] {
-        var results = [StudentAssignmentInfo]()
-        
-        if let messageFilter {
-            results.append(contentsOf: messageFilter.filterStudents(studentAssignmentInfos, score: messageFilterScore, score2: messageFilterScore2))
-        }
-        
-        return results
-    }
-    
-    func generateSubject() {
-        if let messageFilter {
-            if let selectedCourse {
-                subject = messageFilter.subject(assignmentName: selectedAssignment?.name, score: messageFilterScore, score2: messageFilterScore2, courseName: selectedCourse.name)
-            }
-        } else {
-            subject = ""
-        }
-    }
-    
-    @Published var messageSendState: MessageSendState = .unsent
-    
-    func sendMessage() async {
-        guard let selectedCourse else {
-            return
-        }
-        
-        Task { @MainActor in
-            messageSendState = .sending
-        }
-        
-        await networking.sendMessage(course: selectedCourse, recipients: studentsToMessage, subject: subject, isGeneric: substitutionsUsed == 0, message: message)
+// MARK: - ViewModel
 
-        Task { @MainActor in
-            messageSendState = .sent
-        }
+final class ViewModel: ObservableObject {
+
+  // MARK: Internal
+
+  @Published var waitingForNetwork = false
+
+  @Published var courses = [Course]()
+  @Published var assignments = [Assignment]()
+  @Published var searchTerm = ""
+
+  @Published var messageSendState = MessageSendState.unsent
+
+  @Published var accessToken = "" {
+    didSet {
+      networking = Networking(accessToken: accessToken)
+
+      Task { @MainActor in
+        waitingForNetwork = true
+        courses = await networking.fetchCourses()
+        waitingForNetwork = false
+      }
     }
+  }
+
+  @Published var selectedCourse: Course? = nil {
+    didSet {
+      Task { @MainActor in
+        waitingForNetwork = true
+        if messageMode == .assignment {
+          assignments = await networking.fetchAssignments(course: selectedCourse)
+        } else {
+          studentAssignmentInfos = await networking.fetchAllStudentAssignmentInfos(course: selectedCourse)
+        }
+        waitingForNetwork = false
+      }
+    }
+  }
+
+  @Published var selectedAssignment: Assignment? = nil {
+    didSet {
+      Task { @MainActor in
+        waitingForNetwork = true
+        studentAssignmentInfos = await networking.fetchStudentAssignmentInfos(
+          assignment: selectedAssignment,
+          course: selectedCourse,
+        )
+        waitingForNetwork = false
+      }
+
+      generateSubject()
+    }
+  }
+
+  @Published var studentAssignmentInfos = [StudentAssignmentInfo]() {
+    didSet {
+      disabledStudentIds.removeAll()
+    }
+  }
+
+  @Published var messageFilter: MessageFilter? = nil {
+    didSet {
+      generateSubject()
+      disabledStudentIds.removeAll()
+    }
+  }
+
+  @Published var messageFilterScore: Double = 0 {
+    didSet {
+      generateSubject()
+      disabledStudentIds.removeAll()
+    }
+  }
+
+  @Published var messageFilterScore2: Double = 100 {
+    didSet {
+      generateSubject()
+      disabledStudentIds.removeAll()
+    }
+  }
+
+  @Published var messageMode = MessageMode.assignment {
+    didSet {
+      Task { @MainActor in
+        waitingForNetwork = true
+        if messageMode == .assignment {
+          assignments = await networking.fetchAssignments(course: selectedCourse)
+        } else {
+          studentAssignmentInfos = await networking.fetchAllStudentAssignmentInfos(course: selectedCourse)
+        }
+        waitingForNetwork = false
+      }
+    }
+  }
+
+  @Published var subject = "" {
+    didSet {
+      messageSendState = .unsent
+    }
+  }
+
+  @Published var message = "" {
+    didSet {
+      messageSendState = .unsent
+    }
+  }
+
+  @Published var disabledStudentIds = Set<Int>() {
+    didSet {
+      messageSendState = .unsent
+    }
+  }
+
+  var studentsToMessage: [StudentAssignmentInfo] {
+    studentsMatchingFilter.filter { !disabledStudentIds.contains($0.id) }
+  }
+
+  var substitutionsUsed: Int {
+    var count = 0
+    for substitution in Substitutions.allCases {
+      let comps = message.components(separatedBy: substitution.literal)
+      count += comps.count - 1
+    }
+
+    return count
+  }
+
+  var studentsMatchingFilter: [StudentAssignmentInfo] {
+    var results = [StudentAssignmentInfo]()
+
+    if let messageFilter {
+      results.append(contentsOf: messageFilter.filterStudents(
+        studentAssignmentInfos,
+        score: messageFilterScore,
+        score2: messageFilterScore2,
+      ))
+    }
+
+    return results
+  }
+
+  func generateSubject() {
+    if let messageFilter {
+      if let selectedCourse {
+        subject = messageFilter.subject(
+          assignmentName: selectedAssignment?.name,
+          score: messageFilterScore,
+          score2: messageFilterScore2,
+          courseName: selectedCourse.name,
+        )
+      }
+    } else {
+      subject = ""
+    }
+  }
+
+  func sendMessage() async {
+    guard let selectedCourse else {
+      return
+    }
+
+    Task { @MainActor in
+      messageSendState = .sending
+    }
+
+    await networking.sendMessage(
+      course: selectedCourse,
+      recipients: studentsToMessage,
+      subject: subject,
+      isGeneric: substitutionsUsed == 0,
+      message: message,
+    )
+
+    Task { @MainActor in
+      messageSendState = .sent
+    }
+  }
+
+  // MARK: Private
+
+  private var networking = Networking(accessToken: "")
+
 }
+
+// MARK: - StudentAssignmentInfo
 
 struct StudentAssignmentInfo: Hashable {
-    let id: Int
-    let name: String
-    let sortableName: String
-    let score: Double?
-    let grade: String?
-    let submittedAt: Date?
-    let redoRequest: Bool
-    
-    let courseScore: Double?
-    let lastCourseActivityAt: Date?
-    
-    var firstName: String {
-        let formatter = PersonNameComponentsFormatter()
-        let comps = formatter.personNameComponents(from: name)
-        return comps?.givenName ?? name
-    }
+  let id: Int
+  let name: String
+  let sortableName: String
+  let score: Double?
+  let grade: String?
+  let submittedAt: Date?
+  let redoRequest: Bool
+
+  let courseScore: Double?
+  let lastCourseActivityAt: Date?
+
+  var firstName: String {
+    let formatter = PersonNameComponentsFormatter()
+    let comps = formatter.personNameComponents(from: name)
+    return comps?.givenName ?? name
+  }
 }
 
+// MARK: - MessageSendState
+
 enum MessageSendState {
-    case unsent, sending, sent
-    
-    var title: String {
-        switch self {
-        case .unsent:
-            "Send"
-        case .sending:
-            "Sending"
-        case .sent:
-            "Message sent!"
-        }
+  case unsent
+  case sending
+  case sent
+
+  var title: String {
+    switch self {
+    case .unsent:
+      "Send"
+    case .sending:
+      "Sending"
+    case .sent:
+      "Message sent!"
     }
+  }
 }
