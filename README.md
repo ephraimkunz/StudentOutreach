@@ -18,6 +18,5 @@ A tool for teachers to send personalized messages to students on Canvas.
 * File a [Github Issue](https://github.com/ephraimkunz/StudentOutreach/issues/new/choose).
 
 ## Screenshots
-<img width="947" alt="Screenshot 2023-09-19 at 9 31 05 PM" src="https://github.com/ephraimkunz/StudentOutreach/assets/10914093/6277f0c2-0991-400d-bad6-e6372314afcf">
-<img width="947" alt="Screenshot 2023-09-19 at 9 32 08 PM" src="https://github.com/ephraimkunz/StudentOutreach/assets/10914093/59ccaa5e-da35-4703-bb86-baca4113b3cf">
-
+<img width="1099" height="761" alt="Screenshot 2025-10-24 at 11 26 16 PM" src="https://github.com/user-attachments/assets/a0a7c295-e580-42cf-8b58-b68097814203" />
+<img width="1099" height="761" alt="Screenshot 2025-10-24 at 11 27 10 PM" src="https://github.com/user-attachments/assets/3bd2a219-6112-45bf-ba3c-2a062fd12626" />
