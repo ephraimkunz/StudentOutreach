@@ -11,7 +11,7 @@ struct ContentView: View {
     @StateObject private var viewModel = ViewModel()
     @AppStorage("access-token") private var accessToken: String = ""
     @State private var presentingSendConfirmation = false
-    
+        
     var formSection: some View {
         Form {
             TextField("Access Token:", text: $viewModel.accessToken)
@@ -135,7 +135,21 @@ struct ContentView: View {
             accessToken = viewModel.accessToken
         }
         .toolbar {
-            FileBugButton()
+            if viewModel.waitingForNetwork {
+                ToolbarItem {
+                    ProgressView()
+                        .controlSize(.small)
+                        .padding(10)
+                }
+                
+                if #available(macOS 26.0, *) {
+                    ToolbarSpacer(.fixed)
+                }
+            }
+            
+            ToolbarItem {
+                FileBugButton()
+            }
         }
     }
 }

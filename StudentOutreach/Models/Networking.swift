@@ -66,52 +66,37 @@ struct Networking {
         }
     }
     
-    // This is the workaround for the above fetchAssignments issue.
-    func fetchAssignmentsViaAssignmentGroups(course: Course?) async -> [Assignment] {
-        guard let course else {
-            return []
-        }
-        
-        var request = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses/\(course.id)/assignment_groups?include[]=assignments&per_page=100")!)
-        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        
-        do {
-            let (data, _) = try await URLSession.shared.data(for: request)
-            
-            let assignmentGroups = try decoder.decode([AssignmentGroup].self, from: data)
-            let assignments = assignmentGroups.flatMap({ $0.assignments })
-            return assignments.filter({ $0.published }).sorted(by: { $0.name < $1.name })
-        } catch {
-            logger.error("Hit error fetching assignments: \(error)")
-            return []
-        }
-    }
-    
     func fetchAllStudentAssignmentInfos(course: Course?) async -> [StudentAssignmentInfo] {
         guard let course else {
             return []
         }
         
-        do {
-            // Grab all students in this course (but not the test user).
-            let userRequest = {
-                var userRequest = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&include[]=enrollments&per_page=100")!)
-                userRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-                return userRequest
-            }()
-            let (userData, _) = try await URLSession.shared.data(for: userRequest)
-            let users = try decoder.decode([User].self, from: userData)
-            
-            var infos = [StudentAssignmentInfo]()
-            for user in users {
-                infos.append(StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: nil, grade: nil, submittedAt: nil, redoRequest: false, courseScore: user.enrollments[0].grades.currentScore, lastCourseActivityAt: user.enrollments[0].lastActivityAt))
+        var results = [StudentAssignmentInfo]()
+        var nextPageURL: String? = "https://canvas.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&include[]=enrollments&per_page=100"
+        
+        repeat {
+            do {
+                // Grab all students in this course (but not the test user).
+                let userRequest = {
+                    var userRequest = URLRequest(url: URL(string: nextPageURL!)!)
+                    userRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+                    return userRequest
+                }()
+                let (userData, response) = try await URLSession.shared.data(for: userRequest)
+                let users = try decoder.decode([User].self, from: userData)
+                
+                for user in users {
+                    results.append(StudentAssignmentInfo(id: user.id, name: user.name, sortableName: user.sortableName, score: nil, grade: nil, submittedAt: nil, redoRequest: false, courseScore: user.enrollments[0].grades.currentScore, lastCourseActivityAt: user.enrollments[0].lastActivityAt))
+                }
+                
+                nextPageURL = nextPageURLFromResponse(response)
+            } catch {
+                logger.error("Hit error fetching all studentAssignmentInfos: \(error)")
+                return []
             }
-            
-            return infos.sorted(by: { $0.sortableName < $1.sortableName })
-        } catch {
-            logger.error("Hit error fetching all studentAssignmentInfos: \(error)")
-            return []
-        }
+        } while nextPageURL != nil
+        
+        return results.sorted(by: { $0.sortableName < $1.sortableName })
     }
     
     func fetchStudentAssignmentInfos(assignment: Assignment?, course: Course?) async -> [StudentAssignmentInfo] {
@@ -119,34 +104,67 @@ struct Networking {
             return []
         }
         
+        @Sendable func allGradeableStudents(courseID: Int, assignmentID: Int) async throws -> [UserDisplay] {
+            var results = [UserDisplay]()
+            var nextPageURL: String? = "https://canvas.instructure.com/api/v1/courses/\(course.id)/assignments/\(assignment.id)/gradeable_students?per_page=100"
+            repeat {
+                var request = URLRequest(url: URL(string: nextPageURL!)!)
+                request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+                
+                let (data, response) = try await URLSession.shared.data(for: request)
+                results.append(contentsOf: try decoder.decode([UserDisplay].self, from: data))
+                
+                nextPageURL = nextPageURLFromResponse(response)
+            } while nextPageURL != nil
+            
+            return results
+        }
+        
+        @Sendable func allSubmissions(courseID: Int, assignmentID: Int) async throws -> [Submission] {
+            var results = [Submission]()
+            var nextPageURL: String? = "https://canvas.instructure.com/api/v1/courses/\(course.id)/assignments/\(assignment.id)/submissions?per_page=100"
+            repeat {
+                var request = URLRequest(url: URL(string: nextPageURL!)!)
+                request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+                
+                let (data, response) = try await URLSession.shared.data(for: request)
+                results.append(contentsOf: try decoder.decode([Submission].self, from: data))
+                
+                nextPageURL = nextPageURLFromResponse(response)
+            } while nextPageURL != nil
+            
+            return results
+        }
+        
+        @Sendable func allUsers(courseID: Int) async throws -> [User] {
+            var results = [User]()
+            var nextPageURL: String? = "https://canvas.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&include[]=enrollments&per_page=100"
+            repeat {
+                var request = URLRequest(url: URL(string: nextPageURL!)!)
+                request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+                
+                let (data, response) = try await URLSession.shared.data(for: request)
+                results.append(contentsOf: try decoder.decode([User].self, from: data))
+                
+                nextPageURL = nextPageURLFromResponse(response)
+            } while nextPageURL != nil
+            
+            return results
+        }
+        
         do {
             // Grab all students eligible to submit the assignment.
-            let gradeableStudentRequest = {
-                var gradeableStudentRequest = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses/\(course.id)/assignments/\(assignment.id)/gradeable_students?per_page=100")!)
-                gradeableStudentRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-                return gradeableStudentRequest
-            }()
-            async let (gradeableStudentData, _) = try URLSession.shared.data(for: gradeableStudentRequest)
+            async let allGradeableStudents = allGradeableStudents(courseID: course.id, assignmentID: assignment.id)
             
             // Grab all submissions to the assignment.
-            let submissionRequest = {
-                var submissionRequest = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses/\(course.id)/assignments/\(assignment.id)/submissions?per_page=100")!)
-                submissionRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-                return submissionRequest
-            }()
-            async let (submissionData, _) = try URLSession.shared.data(for: submissionRequest)
+            async let allSubmissions = allSubmissions(courseID: course.id, assignmentID: assignment.id)
             
             // Grab all students in this course (but not the test user).
-            let userRequest = {
-                var userRequest = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&include[]=enrollments&per_page=100")!)
-                userRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-                return userRequest
-            }()
-            async let (userData, _) = try URLSession.shared.data(for: userRequest)
+            async let allUsers = allUsers(courseID: course.id)
             
-            let displayStudents = try await decoder.decode([UserDisplay].self, from: gradeableStudentData)
-            let submissions = try await decoder.decode([Submission].self, from: submissionData)
-            let users = try await decoder.decode([User].self, from: userData)
+            let displayStudents = try await allGradeableStudents
+            let submissions = try await allSubmissions
+            let users = try await allUsers
             
             var infos = [StudentAssignmentInfo]()
             for displayStudent in displayStudents {
@@ -227,4 +245,17 @@ struct Networking {
             }
         }
     }
+}
+
+func nextPageURLFromResponse(_ response: URLResponse) -> String? {
+    var result: String?
+    if let response = response as? HTTPURLResponse, let link = response.value(forHTTPHeaderField: "Link") {
+        let linkData = link.split(separator: ",").map { $0.split(separator: "; ") }
+        if let next = linkData.first(where: { $0.contains("rel=\"next\"") }) {
+            let trimSet = CharacterSet(charactersIn: "<>")
+            result = next[0].trimmingCharacters(in: trimSet)
+        }
+    }
+    
+    return result
 }

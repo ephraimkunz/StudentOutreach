@@ -9,14 +9,18 @@ import Foundation
 import os.log
 
 class ViewModel: ObservableObject {
-    var networking = Networking(accessToken: "")
+    private var networking = Networking(accessToken: "")
+    
+    @Published var waitingForNetwork = false
     
     @Published var accessToken = "" {
         didSet {
             networking = Networking(accessToken: accessToken)
             
             Task { @MainActor in
+                waitingForNetwork = true
                 courses = await networking.fetchCourses()
+                waitingForNetwork = false
             }
         }
     }
@@ -25,11 +29,13 @@ class ViewModel: ObservableObject {
     @Published var selectedCourse: Course? = nil {
         didSet {
             Task { @MainActor in
+                waitingForNetwork = true
                 if messageMode == .assignment {
-                    assignments = await networking.fetchAssignmentsViaAssignmentGroups(course: selectedCourse)
+                    assignments = await networking.fetchAssignments(course: selectedCourse)
                 } else {
                     studentAssignmentInfos = await networking.fetchAllStudentAssignmentInfos(course: selectedCourse)
                 }
+                waitingForNetwork = false
             }
         }
     }
@@ -38,7 +44,9 @@ class ViewModel: ObservableObject {
     @Published var selectedAssignment: Assignment? = nil {
         didSet {
             Task { @MainActor in
+                waitingForNetwork = true
                 studentAssignmentInfos = await networking.fetchStudentAssignmentInfos(assignment: selectedAssignment, course: selectedCourse)
+                waitingForNetwork = false
             }
             
             generateSubject()
@@ -71,11 +79,13 @@ class ViewModel: ObservableObject {
     @Published var messageMode: MessageMode = .assignment {
         didSet {
             Task { @MainActor in
+                waitingForNetwork = true
                 if messageMode == .assignment {
-                    assignments = await networking.fetchAssignmentsViaAssignmentGroups(course: selectedCourse)
+                    assignments = await networking.fetchAssignments(course: selectedCourse)
                 } else {
                     studentAssignmentInfos = await networking.fetchAllStudentAssignmentInfos(course: selectedCourse)
                 }
+                waitingForNetwork = false
             }
         }
     }
