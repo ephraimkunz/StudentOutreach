@@ -201,7 +201,8 @@ enum MessageFilter: CaseIterable, Identifiable {
     case .scoredLessThan:
       studentAssignmentInfos.filter { student in
         if let studentScore = student.score {
-          return studentScore < score && student.submittedAt != nil
+          // Don't include students who haven't submitted, or who having a pending ungraded submission.
+          return studentScore < score && student.submittedAt != nil && student.gradeMatchesCurrentSubmission
         }
 
         return false

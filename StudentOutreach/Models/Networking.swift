@@ -93,6 +93,7 @@ struct Networking {
             redoRequest: false,
             courseScore: user.enrollments[0].grades.currentScore,
             lastCourseActivityAt: user.enrollments[0].lastActivityAt,
+            gradeMatchesCurrentSubmission: true
           ))
         }
 
@@ -191,6 +192,7 @@ struct Networking {
             redoRequest: submission?.redoRequest ?? false,
             courseScore: user.enrollments[0].grades.currentScore,
             lastCourseActivityAt: user.enrollments[0].lastActivityAt,
+            gradeMatchesCurrentSubmission: submission?.gradeMatchesCurrentSubmission ?? true
           )
           infos.append(assignmentInfo)
         }

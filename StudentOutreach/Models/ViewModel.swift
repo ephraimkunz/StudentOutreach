@@ -206,6 +206,10 @@ struct StudentAssignmentInfo: Hashable {
 
   let courseScore: Double?
   let lastCourseActivityAt: Date?
+  
+  // A boolean flag which is false if the student has re-submitted since the
+  // submission was last graded.
+  let gradeMatchesCurrentSubmission: Bool
 
   var firstName: String {
     let formatter = PersonNameComponentsFormatter()

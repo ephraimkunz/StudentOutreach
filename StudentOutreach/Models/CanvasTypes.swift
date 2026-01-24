@@ -31,6 +31,10 @@ struct Submission: Decodable, Hashable {
   let submittedAt: Date?
   let grade: String?
   let redoRequest: Bool
+  
+  // A boolean flag which is false if the student has re-submitted since the
+  // submission was last graded.
+  let gradeMatchesCurrentSubmission: Bool
 }
 
 // MARK: - Enrollment
