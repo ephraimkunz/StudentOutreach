@@ -20,13 +20,14 @@ struct Networking {
     var request =
       URLRequest(
         url: URL(
-          string: "https://canvas.instructure.com/api/v1/courses?enrollment_type=teacher&enrollment_state=active&include[]=term&include[]=sections&per_page=100"
+          string: "https://byupw.instructure.com/api/v1/courses?enrollment_type=teacher&enrollment_state=active&include[]=term&include[]=sections&per_page=100"
         )!
       )
     request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
     do {
-      let (data, _) = try await URLSession.shared.data(for: request)
+      let (data, response) = try await URLSession.shared.data(for: request)
+      print(data, response)
 
       let courses = try decoder.decode([Course].self, from: data)
       return courses.sorted { first, second in
@@ -49,7 +50,7 @@ struct Networking {
     }
 
     var request =
-      URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/courses/\(course.id)/assignments?per_page=100")!)
+      URLRequest(url: URL(string: "https://byupw.instructure.com/api/v1/courses/\(course.id)/assignments?per_page=100")!)
     request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
 
     do {
@@ -69,7 +70,7 @@ struct Networking {
     }
 
     var results = [StudentAssignmentInfo]()
-    var nextPageURL: String? = "https://canvas.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&include[]=enrollments&per_page=100"
+    var nextPageURL: String? = "https://byupw.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&include[]=enrollments&per_page=100"
 
     repeat {
       do {
@@ -115,7 +116,7 @@ struct Networking {
     @Sendable
     func allGradeableStudents(courseID _: Int, assignmentID _: Int) async throws -> [UserDisplay] {
       var results = [UserDisplay]()
-      var nextPageURL: String? = "https://canvas.instructure.com/api/v1/courses/\(course.id)/assignments/\(assignment.id)/gradeable_students?per_page=100"
+      var nextPageURL: String? = "https://byupw.instructure.com/api/v1/courses/\(course.id)/assignments/\(assignment.id)/gradeable_students?per_page=100"
       repeat {
         var request = URLRequest(url: URL(string: nextPageURL!)!)
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -132,7 +133,7 @@ struct Networking {
     @Sendable
     func allSubmissions(courseID _: Int, assignmentID _: Int) async throws -> [Submission] {
       var results = [Submission]()
-      var nextPageURL: String? = "https://canvas.instructure.com/api/v1/courses/\(course.id)/assignments/\(assignment.id)/submissions?per_page=100"
+      var nextPageURL: String? = "https://byupw.instructure.com/api/v1/courses/\(course.id)/assignments/\(assignment.id)/submissions?per_page=100"
       repeat {
         var request = URLRequest(url: URL(string: nextPageURL!)!)
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -149,7 +150,7 @@ struct Networking {
     @Sendable
     func allUsers(courseID _: Int) async throws -> [User] {
       var results = [User]()
-      var nextPageURL: String? = "https://canvas.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&include[]=enrollments&per_page=100"
+      var nextPageURL: String? = "https://byupw.instructure.com/api/v1/courses/\(course.id)/users?enrollment_type=student&include[]=enrollments&per_page=100"
       repeat {
         var request = URLRequest(url: URL(string: nextPageURL!)!)
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -213,7 +214,7 @@ struct Networking {
       // No substitutions, so just send one bulk message (like the webUI does today).
       let body = finalMessageBody(fullName: "", firstName: "", message: message)
 
-      var request = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/conversations")!)
+      var request = URLRequest(url: URL(string: "https://byupw.instructure.com/api/v1/conversations")!)
       request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
       request.httpMethod = "POST"
 
@@ -242,7 +243,7 @@ struct Networking {
       for recipient in recipients {
         let body = finalMessageBody(fullName: recipient.name, firstName: recipient.firstName, message: message)
 
-        var request = URLRequest(url: URL(string: "https://canvas.instructure.com/api/v1/conversations")!)
+        var request = URLRequest(url: URL(string: "https://byupw.instructure.com/api/v1/conversations")!)
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.httpMethod = "POST"
 
